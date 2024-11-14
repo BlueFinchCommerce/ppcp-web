@@ -1,0 +1,19 @@
+{
+  "name": "ppcp-web",
+  "version": "1.0.0",
+  "description": "PPCP Web",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/genecommerce/ppcp-web.git"
+  },
+  "author": "Chloe Langford",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/genecommerce/ppcp-web/issues"
+  },
+  "homepage": "https://github.com/genecommerce/ppcp-web#readme"
+}

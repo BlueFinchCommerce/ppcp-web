@@ -1,10 +1,13 @@
+var client = require("./client");
 var googlePayment = require("./google-payment");
+
 //var VERSION = process.env.npm_package_version;
-
-alert('here')
-
 module.exports = {
-    /** @type {module:braintree-web/google-payment} */
+
+    /** @type {module:braintree-web/client} */
+    client: client,
+
+    /** @type {module:ppcp-web/google-payment} */
     googlePayment: googlePayment,
 
     /**

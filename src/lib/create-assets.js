@@ -31,7 +31,7 @@ function createAssets(authorization) {
 
             script.src = url;
             script.dataset.namespace = `ppcp_${namespace}`;
-           // script.dataset.partnerAttributionId = getPartnerId();
+           script.dataset.partnerAttributionId = 'GENE_PPCP';
             script.dataset.pageType = pageType || 'checkout';
             if (userIdToken) {
                 script.dataset.userIdToken = userIdToken;

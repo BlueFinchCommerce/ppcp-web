@@ -37,8 +37,6 @@ var Client = require("./client");
  */
 function create() {
     return function (options) {
-
-        alert('create is running')
         console.log('client/index options:', options)
 
         if (!options.authorization) {
@@ -52,7 +50,7 @@ function create() {
             );
         }
 
-        //return Client.initialize(options);
+        return Client.initialize(options);
 
     };
 }

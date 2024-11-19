@@ -2,7 +2,6 @@ var GooglePayment = require("./google-payment");
 var createAssets = require("../lib/create-assets");
 
 // var BraintreeError = require("../lib/braintree-error");
-// var createAssetsUrl = require("../lib/create-assets-url");
 // var createDeferredClient = require("../lib/create-deferred-client");
 // var basicComponentVerification = require("../lib/basic-component-verification");
 // var wrapPromise = require("@braintree/wrap-promise");

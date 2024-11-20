@@ -1,5 +1,6 @@
 var GooglePayment = require("./google-payment");
 var createAssets = require("../lib/create-assets");
+var getConfiguration = require("../lib/get-configuration")
 
 // var BraintreeError = require("../lib/braintree-error");
 // var createDeferredClient = require("../lib/create-deferred-client");
@@ -10,48 +11,38 @@ var createAssets = require("../lib/create-assets");
 
 function create(options) {
 
-    alert('hello world :)')
-
     var name = "Google Pay";
 
-    alert('create :)')
-
-    //'https://pay.google.com/gp/p/js/pay.js'
-
-   // const configuration = window.checkoutConfig?.ppcp || this.context,
-
-    // Hardcoded for the minute: @todo - replace with client configuration
-    const clientId = 'BAAaoPlNAgTXQ07GmF1Hu4Mr6vafLpsOaHr9WzR-kUdX58T13gFWv78bPQkkX-5chkDos3t8tP5YlGtt4Y'
-
-    const configuration = window.checkoutConfig?.ppcp,
+    // const configuration = window.checkoutConfig?.ppcp || this.context
+    const configuration = getConfiguration.getConfiguration?.ppcp,
         // params = {
         //     'client-id': configuration.clientId,
         //     'intent': configuration.intent,
         //     'components': 'googlepay'
         // },
         params = {
-            'client-id': clientId,
-            'intent': 'authorize',
+            'client-id': configuration.clientId,
+            'intent':  configuration.intent,
             'components': 'googlepay',
-            'currency': 'USD',
-            'buyer-country': 'US'
+            'currency': configuration.currency
         },
         pageType = 'checkout'
+
+    console.log('configuration', configuration)
 
     // @todo - get page type ('checkout')
        // pageType = configModel.pageType;
 
-    // @todo - replace buyer-country with this
-    // if (configModel.environment === 'sandbox') {
-    //     params['buyer-country'] = configuration.buyerCountry;
-    // }
+    if (configuration.environment === 'sandbox') {
+        params['buyer-country'] = configuration.buyerCountry;
+    }
 
     // Create Assets
     createAssets.create('https://pay.google.com/gp/p/js/pay.js', {}, 'ppcp_pay', pageType)
     createAssets.create('https://www.paypal.com/sdk/js', params, 'ppcp_googlepay', pageType)
 
-    //
-    // var createPromise, instance;
+
+    var createPromise, instance;
     //
     // createPromise = createDeferredClient
     //     .create({
@@ -75,7 +66,17 @@ function create(options) {
     //             });
     //
     //         options.createPromise = createPromise;
-    //         instance = new GooglePayment(options);
+
+    const element = document.getElementById('google-pay-button');
+
+            options = {
+                buttonColor: 'red',
+                placeOrder: () => {
+                    alert('red')
+                }
+            }
+
+            instance = new GooglePayment(options, element);
     //
     //         if (!options.useDeferredClient) {
     //             return createPromise.then(function (client) {
@@ -85,9 +86,7 @@ function create(options) {
     //             });
     //         }
     //
-    //         return instance
+            return instance
 }
 
-module.exports = {
-    create: create(),
-};
+module.exports = create();

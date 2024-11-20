@@ -37,6 +37,8 @@ function createAssets(authorization) {
                 script.dataset.userIdToken = userIdToken;
             }
 
+            console.log('cache', cache)
+
             // On load resolve but also emit a global event.
             script.onload = () => {
 
@@ -50,6 +52,7 @@ function createAssets(authorization) {
 
             document.head.appendChild(script);
         });
+
 
         return cache[key];
     };

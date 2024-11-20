@@ -10,6 +10,22 @@
     "type": "git",
     "url": "git+https://github.com/genecommerce/ppcp-web.git"
   },
+  "dependencies": {
+    "@braintree/asset-loader": "2.0.1",
+    "@braintree/browser-detection": "2.0.1",
+    "@braintree/event-emitter": "0.4.1",
+    "@braintree/extended-promise": "1.0.0",
+    "@braintree/iframer": "2.0.0",
+    "@braintree/sanitize-url": "7.0.4",
+    "@braintree/uuid": "1.0.0",
+    "@braintree/wrap-promise": "2.1.0",
+    "@paypal/accelerated-checkout-loader": "1.1.0",
+    "card-validator": "10.0.0",
+    "credit-card-type": "10.0.1",
+    "framebus": "6.0.0",
+    "inject-stylesheet": "6.0.1",
+    "promise-polyfill": "8.2.3"
+  },
   "author": "Chloe Langford",
   "license": "ISC",
   "bugs": {

@@ -43,7 +43,7 @@ function create(options, element) {
     //
     //         options.createPromise = createPromise;
 
-            return new GooglePayment(options, element);
+            return new GooglePayment(options.googlePay, element);
 }
 
 module.exports = create;

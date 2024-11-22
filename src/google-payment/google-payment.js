@@ -7,7 +7,7 @@ var clientContext,
 
 function GooglePayment(context, element) {
 
-    console.log(context)
+    console.log('context', context)
 
     if (!context) return; // @todo - error handling
 
@@ -127,7 +127,7 @@ function createGooglePayClient(googlepayConfig) {
 function createGooglePayButton(googlepayConfig) {
     return googlePayClient.createButton({
         allowedPaymentMethods: googlepayConfig.allowedPaymentMethods,
-        buttonColor: clientContext.buttonColor.toLowerCase(),
+        buttonColor: clientContext.button.buttonColor.toLowerCase(),
         buttonSizeMode: 'fill',
         onClick: clientContext.beforeOnClick
             ? () => clientContext.beforeOnClick().then(() => onClick(googlepayConfig))
@@ -137,40 +137,41 @@ function createGooglePayButton(googlepayConfig) {
 
 function onClick(googlepayConfig) {
 
-    alert('click yay :)')
-    if (this.context.validateAdditionalValidators && !this.context.validateAdditionalValidators()) {
+    if (clientContext.validateAdditionalValidators && !clientContext.validateAdditionalValidators()) {
         return false;
     }
 
     // if (!checkGuestCheckout()) {
     //     return false;
     // }
-    //
+
     const paymentDataRequest = Object.assign({}, googlepayConfig),
-        callbackIntents = ['PAYMENT_AUTHORIZATION'];
+        callbackIntents = ['PAYMENT_AUTHORIZATION'],
     //     requiresShipping = this.context.onPaymentDataChanged && !configModel.isVirtual;
-    //
-    // if (requiresShipping) {
-    //     callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
-    // }
-    //
-    // paymentDataRequest.allowedPaymentMethods = googlepayConfig.allowedPaymentMethods;
-    // paymentDataRequest.transactionInfo = {
-    //     countryCode: googlepayConfig.countryCode,
-    //     currencyCode: configModel.currencyCode,
-    //     totalPriceStatus: 'FINAL',
-    //     totalPrice: parseFloat(configModel.grandTotalAmount).toFixed(2)
-    // };
-    // paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
-    // paymentDataRequest.shippingAddressRequired = requiresShipping;
-    // paymentDataRequest.shippingAddressParameters = {
-    //     phoneNumberRequired: requiresShipping
-    // };
-    // paymentDataRequest.emailRequired = true;
-    // paymentDataRequest.shippingOptionRequired = requiresShipping;
-    // paymentDataRequest.callbackIntents = callbackIntents;
-    // delete paymentDataRequest.countryCode;
-    // delete paymentDataRequest.isEligible;
+
+        requiresShipping = clientContext.onPaymentDataChanged && !configModel.isVirtual;
+
+    if (requiresShipping) {
+        callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
+    }
+
+    paymentDataRequest.allowedPaymentMethods = googlepayConfig.allowedPaymentMethods;
+    paymentDataRequest.transactionInfo = {
+        countryCode: googlepayConfig.countryCode,
+        currencyCode: 'GBP', // @todo - pass config
+        totalPriceStatus: 'FINAL',
+        totalPrice: parseFloat(100).toFixed(2) // @todo - pass price
+    };
+    paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
+    paymentDataRequest.shippingAddressRequired = requiresShipping;
+    paymentDataRequest.shippingAddressParameters = {
+        phoneNumberRequired: requiresShipping
+    };
+    paymentDataRequest.emailRequired = true;
+    paymentDataRequest.shippingOptionRequired = requiresShipping;
+    paymentDataRequest.callbackIntents = callbackIntents;
+    delete paymentDataRequest.countryCode;
+    delete paymentDataRequest.isEligible;
 
     return googlePayClient.loadPaymentData(paymentDataRequest)
         .catch((err) => {
@@ -180,11 +181,10 @@ function onClick(googlepayConfig) {
 
 function onPaymentAuthorized(paymentData) {
     return new Promise(async (resolve) => {
-
         resolve()
         // @todo - would this be a call back in the component??
         // try {
-        //     this.context.setAddresses(paymentData)
+        //     clientContext.setAddresses(paymentData)
         //         .then(this.context.createOrder.bind(this.context))
         //         .then((orderId) => {
         //             return this.googlepay.confirmOrder({

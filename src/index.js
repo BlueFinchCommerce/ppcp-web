@@ -1,12 +1,8 @@
-var cardFields = require("./card-fields");
 var client = require("./client");
 var googlePayment = require("./google-payment");
 
 //var VERSION = process.env.npm_package_version;
 module.exports = {
-
-    /** @type {module:ppcp-web/card-fields} */
-    cardFields: cardFields,
 
     /** @type {module:ppcp-web/client} */
     client: client,

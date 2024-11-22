@@ -95,17 +95,21 @@ function deviceSupported() {
 function createGooglePayClient(googlepayConfig) {
 
     const paymentDataCallbacks = {
-        onPaymentAuthorized: onPaymentAuthorized()
+        onPaymentAuthorized: () => {
+            console.log('done');
+        }
     };
 
     // @todo - get config model
-  //  if (this.context.onPaymentDataChanged && !configModel.isVirtual) {
+    // if you make a change to anything - ie billing, shipping etc
+    //  if (this.context.onPaymentDataChanged && !configModel.isVirtual) {
     if (clientContext.onPaymentDataChanged) {
         paymentDataCallbacks.onPaymentDataChanged = (data) => {
             return clientContext.onPaymentDataChanged(data, googlepayConfig);
         };
     }
 
+    console.log(paymentDataCallbacks);
     googlePayClient
         = new window.google.payments.api.PaymentsClient({
         environment: getEnvironment(),
@@ -149,7 +153,7 @@ function onClick(googlepayConfig) {
         callbackIntents = ['PAYMENT_AUTHORIZATION'],
     //     requiresShipping = this.context.onPaymentDataChanged && !configModel.isVirtual;
 
-        requiresShipping = clientContext.onPaymentDataChanged && !configModel.isVirtual;
+        requiresShipping = clientContext.onPaymentDataChanged;
 
     if (requiresShipping) {
         callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
@@ -163,12 +167,12 @@ function onClick(googlepayConfig) {
         totalPrice: parseFloat(100).toFixed(2) // @todo - pass price
     };
     paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
-    paymentDataRequest.shippingAddressRequired = requiresShipping;
+    paymentDataRequest.shippingAddressRequired = !!requiresShipping;
     paymentDataRequest.shippingAddressParameters = {
-        phoneNumberRequired: requiresShipping
+        phoneNumberRequired: !!requiresShipping
     };
     paymentDataRequest.emailRequired = true;
-    paymentDataRequest.shippingOptionRequired = requiresShipping;
+    paymentDataRequest.shippingOptionRequired = !!requiresShipping;
     paymentDataRequest.callbackIntents = callbackIntents;
     delete paymentDataRequest.countryCode;
     delete paymentDataRequest.isEligible;

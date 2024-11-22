@@ -6,6 +6,8 @@ module.exports = {
     output: {
         path: path.resolve( __dirname, 'dist' ),
         filename: 'main.js',
+        libraryTarget: 'amd',
+        umdNamedDefine: true
     },
     module: {
         rules: [
@@ -15,5 +17,6 @@ module.exports = {
                 use: 'babel-loader',
             }
         ]
-    }
+    },
+
 };

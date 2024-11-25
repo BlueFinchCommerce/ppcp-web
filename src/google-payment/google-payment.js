@@ -95,12 +95,12 @@ function deviceSupported() {
 function createGooglePayClient(googlepayConfig) {
 
     const paymentDataCallbacks = {
-        onPaymentAuthorized: () => {
-            console.log('done');
+        onPaymentAuthorized: (data) => {
+            return clientContext.onPaymentAuthorized(data, googlepayConfig)
         }
     };
 
-    // @todo - get config model
+    // @todo - get config model data
     // if you make a change to anything - ie billing, shipping etc
     //  if (this.context.onPaymentDataChanged && !configModel.isVirtual) {
     if (clientContext.onPaymentDataChanged) {
@@ -110,6 +110,7 @@ function createGooglePayClient(googlepayConfig) {
     }
 
     console.log(paymentDataCallbacks);
+
     googlePayClient
         = new window.google.payments.api.PaymentsClient({
         environment: getEnvironment(),
@@ -120,12 +121,11 @@ function createGooglePayClient(googlepayConfig) {
         apiVersion: googlepayConfig.apiVersion,
         apiVersionMinor: googlepayConfig.apiVersionMinor,
         allowedPaymentMethods: googlepayConfig.allowedPaymentMethods
-    })
-        .then((response) => {
-            if (response.result) {
-                return googlepayConfig;
-            }
-        });
+    }).then((response) => {
+        if (response.result) {
+            return googlepayConfig;
+        }
+    });
 }
 
 function createGooglePayButton(googlepayConfig) {

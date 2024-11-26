@@ -7,13 +7,12 @@ var clientContext,
 
 function GooglePayment(context, element) {
 
-    console.log('context', context)
+    console.log('google pay web context', context)
 
     if (!context) return; // @todo - error handling
 
     if (typeof context.placeOrder !== 'function') {
-        console.error('PPCP Google Pay Context passed does not provide a placeOrder method', context);
-        return;
+        return console.error('PPCP Google Pay Context passed does not provide a placeOrder method', context);
     }
 
     clientContext = context
@@ -24,7 +23,7 @@ function GooglePayment(context, element) {
             'client-id': configuration.clientId,
             'intent':  configuration.intent,
             'components': 'googlepay',
-            'currency': configuration.currency
+            'currency': clientContext.transactionInfo.currencyCode
         },
         pageType = 'checkout'
 
@@ -80,10 +79,8 @@ function deviceSupported() {
             .then(googlepayConfig => {
                 if (googlepayConfig.isEligible) {
                     googlepayConfig.allowedPaymentMethods.forEach((method) => {
-                        // @todo - Work out if this should be here :)
-            //            method.parameters.billingAddressParameters.phoneNumberRequired = true;
+                        method.parameters.billingAddressParameters.phoneNumberRequired = true;
                     });
-
                     resolve(googlepayConfig);
                 } else {
                     reject();
@@ -94,19 +91,16 @@ function deviceSupported() {
 
 function createGooglePayClient(googlepayConfig) {
 
+    console.log('clientContext in createGooglePayClient', clientContext)
     const paymentDataCallbacks = {
-        onPaymentAuthorized: (data) => {
-            return clientContext.onPaymentAuthorized(data, googlepayConfig)
-        }
+        onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepayConfig)
     };
 
     // @todo - get config model data
     // if you make a change to anything - ie billing, shipping etc
     //  if (this.context.onPaymentDataChanged && !configModel.isVirtual) {
     if (clientContext.onPaymentDataChanged) {
-        paymentDataCallbacks.onPaymentDataChanged = (data) => {
-            return clientContext.onPaymentDataChanged(data, googlepayConfig);
-        };
+        paymentDataCallbacks.onPaymentDataChanged = (data) => clientContext.onPaymentDataChanged(data, googlepayConfig)
     }
 
     console.log(paymentDataCallbacks);
@@ -162,9 +156,9 @@ function onClick(googlepayConfig) {
     paymentDataRequest.allowedPaymentMethods = googlepayConfig.allowedPaymentMethods;
     paymentDataRequest.transactionInfo = {
         countryCode: googlepayConfig.countryCode,
-        currencyCode: 'GBP', // @todo - pass config
-        totalPriceStatus: 'FINAL',
-        totalPrice: parseFloat(100).toFixed(2) // @todo - pass price
+        currencyCode: clientContext.transactionInfo.currencyCode,
+        totalPriceStatus: clientContext.transactionInfo.totalPriceStatus,
+        totalPrice: parseFloat(clientContext.transactionInfo.totalPrice).toFixed(2)
     };
     paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
     paymentDataRequest.shippingAddressRequired = !!requiresShipping;
@@ -181,44 +175,6 @@ function onClick(googlepayConfig) {
         .catch((err) => {
             console.warn(err);
         });
-}
-
-function onPaymentAuthorized(paymentData) {
-    return new Promise(async (resolve) => {
-        resolve()
-        // @todo - would this be a call back in the component??
-        // try {
-        //     clientContext.setAddresses(paymentData)
-        //         .then(this.context.createOrder.bind(this.context))
-        //         .then((orderId) => {
-        //             return this.googlepay.confirmOrder({
-        //                 orderId,
-        //                 paymentMethodData: paymentData.paymentMethodData
-        //             });
-        //         })
-        //         .then((data) => this.context.onApprove(data, paymentData))
-        //         .then(() => {
-        //             resolve({
-        //                 transactionState: 'SUCCESS'
-        //             });
-        //         })
-        //         .catch((error) => {
-        //             $('body').trigger('processStop');
-        //
-        //             const message = error.message || $t('We’re unable to take that order right now.');
-        //
-        //             resolve({
-        //                 error: {
-        //                     reason: 'PAYMENT_DATA_INVALID',
-        //                     message,
-        //                     intent: 'PAYMENT_AUTHORIZATION'
-        //                 }
-        //             });
-        //         });
-        // } catch (error) {
-        //     console.log(error);
-        // }
-    });
 }
 
 /**

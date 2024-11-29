@@ -1,9 +1,16 @@
-var googlePayment = require("./google-payment");
+const applePayment = require("./apple-payment");
+const googlePayment = require("./google-payment");
+const paypalButtons = require("./paypal-buttons");
 
-//var VERSION = process.env.npm_package_version;
 module.exports = {
+
+    /** @type {module:ppcp-web/apple-payment} */
+    applePayment: applePayment,
 
     /** @type {module:ppcp-web/google-payment} */
     googlePayment: googlePayment,
+
+    /** @type {module:ppcp-web/paypal-buttons} */
+    paypalButtons: paypalButtons,
 
 };

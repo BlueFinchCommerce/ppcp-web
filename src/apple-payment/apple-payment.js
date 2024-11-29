@@ -5,9 +5,9 @@ var clientContext,
     googlePayClient;
 
 
-function GooglePayment(context, element) {
+function ApplePayment(context, element) {
 
-    // console.log('google pay web context', context)
+    console.log('apple pay web context', context)
 
     // if (!context) return; // @todo - error handling
 
@@ -52,17 +52,17 @@ function GooglePayment(context, element) {
     //             }
     //         })
     // }, 1000)
-    // return deviceSupported.bind(this)
-    //     .then(createGooglePayClient.bind(this))
-    //     .then(createGooglePayButton.bind(this))
-    //     .then(googlePayButton => {
-    //         if (googlePayButton) {
-    //             element.appendChild(googlePayButton);
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.warn(err);
-    //     });
+    // // return deviceSupported.bind(this)
+    // //     .then(createGooglePayClient.bind(this))
+    // //     .then(createGooglePayButton.bind(this))
+    // //     .then(googlePayButton => {
+    // //         if (googlePayButton) {
+    // //             element.appendChild(googlePayButton);
+    // //         }
+    // //     })
+    // //     .catch((err) => {
+    // //         console.warn(err);
+    // //     });
 }
 
 function deviceSupported() {
@@ -188,4 +188,4 @@ function getEnvironment() {
     return 'TEST'
 }
 
-module.exports = GooglePayment;
+module.exports = ApplePayment;

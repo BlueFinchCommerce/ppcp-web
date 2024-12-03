@@ -1,7 +1,7 @@
-var createAssets = require("../lib/create-assets");
-var getConfiguration = require("../lib/get-configuration")
+const createAssets = require("../lib/create-assets");
+const getConfiguration = require("../lib/get-configuration")
 
-var clientContext,
+let clientContext,
     googlePayClient;
 
 

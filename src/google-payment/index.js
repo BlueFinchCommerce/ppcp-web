@@ -1,9 +1,9 @@
-var GooglePayment = require("./google-payment");
-var createAssets = require("../lib/create-assets");
-var getConfiguration = require("../lib/get-configuration")
+const GooglePayment = require("./google-payment");
+const createAssets = require("../lib/create-assets");
+const getConfiguration = require("../lib/get-configuration")
 
 function create(options, element) {
-    var name = "Google Pay",
+    const name = "Google Pay",
         pageType = 'checkout'
 
     // Create Assets

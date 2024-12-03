@@ -33,6 +33,7 @@ function PaypalButtons(context, element) {
         params['components'] += ',messages';
     }
 
+    // Leaving this here for now until I move onto the venmo story as unsure if its needed or not yet in this component
     // if (this.paymentMethod === 'ppcp_venmo') {
     //     params['enable-funding'] = 'venmo';
     // }

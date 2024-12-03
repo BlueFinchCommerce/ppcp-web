@@ -1,6 +1,8 @@
 const createAssets = require("../../lib/create-assets");
 
-const namespace = 'ppcp_paypal123';
+// ToDo remove the _new from the namespace, need to leave it for now for development
+// needs a unique namespace compared to the old buttons
+const namespace = 'ppcp_paypal_new';
 let clientContext,
     buttonElement,
     fundingButtons,

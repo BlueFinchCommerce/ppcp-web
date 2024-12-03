@@ -13,8 +13,6 @@ var createAssets = function(url, params, namespace = 'ppcp', pageType, userIdTok
             url = new URL(url);
             url.search = new URLSearchParams(params);
             url = decodeURIComponent(url.href)
-
-            console.log(url)
         }
 
         const key = generateKey(url, namespace, userIdToken);

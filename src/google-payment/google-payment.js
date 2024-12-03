@@ -1,15 +1,14 @@
-var createAssets = require("../lib/create-assets");
-var getConfiguration = require("../lib/get-configuration")
+const createAssets = require("../lib/create-assets");
+const getConfiguration = require("../lib/get-configuration")
 
-var clientContext,
+let clientContext,
     googlePayClient;
 
 
 function GooglePayment(context, element) {
-
-    console.log('google pay web context', context)
-
-    if (!context) return; // @todo - error handling
+    if (!context || !element) {
+        throw new Error("Google Payments requires both context and element.");
+    }
 
     if (typeof context.placeOrder !== 'function') {
         return console.error('PPCP Google Pay Context passed does not provide a placeOrder method', context);
@@ -24,20 +23,14 @@ function GooglePayment(context, element) {
             'intent':  configuration.intent,
             'components': 'googlepay',
             'currency': clientContext.transactionInfo.currencyCode
-        },
-        pageType = 'checkout'
-
-    console.log('configuration', configuration)
-
-    // @todo - get page type ('checkout')
-    // pageType = configModel.pageType;
+        };
 
     if (configuration.environment === 'sandbox') {
         params['buyer-country'] = configuration.buyerCountry;
     }
 
     // Create Assets
-    createAssets.create('https://www.paypal.com/sdk/js', params, 'ppcp_googlepay', pageType)
+    createAssets.create('https://www.paypal.com/sdk/js', params, 'ppcp_googlepay', clientContext.pageType)
 
     const that = this;
 
@@ -52,17 +45,17 @@ function GooglePayment(context, element) {
                 }
             })
     }, 1000)
-    // return deviceSupported.bind(this)
-    //     .then(createGooglePayClient.bind(this))
-    //     .then(createGooglePayButton.bind(this))
-    //     .then(googlePayButton => {
-    //         if (googlePayButton) {
-    //             element.appendChild(googlePayButton);
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.warn(err);
-    //     });
+    return deviceSupported.bind(this)
+        .then(createGooglePayClient.bind(this))
+        .then(createGooglePayButton.bind(this))
+        .then(googlePayButton => {
+            if (googlePayButton) {
+                element.appendChild(googlePayButton);
+            }
+        })
+        .catch((err) => {
+            console.warn(err);
+        });
 }
 
 function deviceSupported() {
@@ -90,8 +83,6 @@ function deviceSupported() {
 }
 
 function createGooglePayClient(googlepayConfig) {
-
-    console.log('clientContext in createGooglePayClient', clientContext)
     const paymentDataCallbacks = {
         onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepayConfig)
     };
@@ -102,8 +93,6 @@ function createGooglePayClient(googlepayConfig) {
     if (clientContext.onPaymentDataChanged) {
         paymentDataCallbacks.onPaymentDataChanged = (data) => clientContext.onPaymentDataChanged(data, googlepayConfig)
     }
-
-    console.log(paymentDataCallbacks);
 
     googlePayClient
         = new window.google.payments.api.PaymentsClient({

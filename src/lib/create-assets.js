@@ -13,8 +13,6 @@ var createAssets = function(url, params, namespace = 'ppcp', pageType, userIdTok
             url = new URL(url);
             url.search = new URLSearchParams(params);
             url = decodeURIComponent(url.href)
-
-            console.log(url)
         }
 
         const key = generateKey(url, namespace, userIdToken);
@@ -38,7 +36,7 @@ var createAssets = function(url, params, namespace = 'ppcp', pageType, userIdTok
 
             // On load resolve but also emit a global event.
             script.onload = () => {
-                console.log('script loaded: ', script.src)
+                console.log(namespace + ' loaded: ', script.src)
 
                 var event = new CustomEvent("ppcpScriptLoaded", {
                     "detail": namespace

@@ -24,7 +24,6 @@ function PaypalButtons(context, element) {
         'currency': clientContext.currency
     }
 
-    // How does this work in production?
     if (clientContext.environment === 'sandbox') {
         params['buyer-country'] = clientContext.buyerCountry;
     }
@@ -137,7 +136,7 @@ function getStyles(funding) {
         color: buttonColor,
         label: buttonLabel,
         shape: buttonShape,
-        // height: 40
+        // height: 40  Should we make this configurable
     };
 }
 
@@ -156,18 +155,6 @@ function addMessage(funding) {
             color: config.color !== 'black' || config.color !== 'white' ? 'black' : config.color
         };
     }
-}
-
-
-/**
- * Environment
- */
-function getEnvironment() {
-    // return configModel.environment === 'sandbox'
-    //     ? 'TEST'
-    //     : 'PRODUCTION';
-
-    return 'TEST'
 }
 
 module.exports = PaypalButtons;

@@ -1,9 +1,7 @@
 const createAssets = require("../lib/create-assets");
-const getConfiguration = require("../lib/get-configuration")
 
 let clientContext,
     googlePayClient;
-
 
 function GooglePayment(context, element) {
     if (!context || !element) {
@@ -16,46 +14,32 @@ function GooglePayment(context, element) {
 
     clientContext = context
 
-    // const configuration = window.checkoutConfig?.ppcp || this.context
-    const configuration = getConfiguration.getConfiguration?.ppcp,
-        params = {
-            'client-id': configuration.clientId,
-            'intent':  configuration.intent,
+    const params = {
+            'client-id': clientContext.clientId,
+            'intent':  clientContext.intent,
             'components': 'googlepay',
             'currency': clientContext.transactionInfo.currencyCode
         };
 
-    if (configuration.environment === 'sandbox') {
-        params['buyer-country'] = configuration.buyerCountry;
+    if (clientContext.environment === 'sandbox') {
+        params['buyer-country'] = clientContext.buyerCountry;
     }
 
     // Create Assets
     createAssets.create('https://www.paypal.com/sdk/js', params, 'ppcp_googlepay', clientContext.pageType)
-
-    const that = this;
-
-    setTimeout(() => {
-        deviceSupported()
-            .then((googlepayConfig) => createGooglePayClient(googlepayConfig))
-            .then((googlepayConfig) => createGooglePayButton(googlepayConfig))
-            .then(googlePayButton => {
-                if (googlePayButton) {
-                    const htmlElement = document.getElementById(element)
-                    htmlElement.appendChild(googlePayButton); // Append button
-                }
-            })
-    }, 1000)
-    return deviceSupported.bind(this)
-        .then(createGooglePayClient.bind(this))
-        .then(createGooglePayButton.bind(this))
+        .then(() => deviceSupported())
+        .then((googlepayConfig) => createGooglePayClient(googlepayConfig))
+        .then((googlepayConfig) => createGooglePayButton(googlepayConfig))
         .then(googlePayButton => {
             if (googlePayButton) {
-                element.appendChild(googlePayButton);
+                const htmlElement = document.getElementById(element)
+                htmlElement.appendChild(googlePayButton); // Append button
             }
         })
-        .catch((err) => {
-            console.warn(err);
+        .catch((error) => {
+            console.error("Error initializing Google Pay Button:", error);
         });
+
 }
 
 function deviceSupported() {
@@ -87,9 +71,6 @@ function createGooglePayClient(googlepayConfig) {
         onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepayConfig)
     };
 
-    // @todo - get config model data
-    // if you make a change to anything - ie billing, shipping etc
-    //  if (this.context.onPaymentDataChanged && !configModel.isVirtual) {
     if (clientContext.onPaymentDataChanged) {
         paymentDataCallbacks.onPaymentDataChanged = (data) => clientContext.onPaymentDataChanged(data, googlepayConfig)
     }
@@ -128,14 +109,8 @@ function onClick(googlepayConfig) {
         return false;
     }
 
-    // if (!checkGuestCheckout()) {
-    //     return false;
-    // }
-
     const paymentDataRequest = Object.assign({}, googlepayConfig),
         callbackIntents = ['PAYMENT_AUTHORIZATION'],
-    //     requiresShipping = this.context.onPaymentDataChanged && !configModel.isVirtual;
-
         requiresShipping = clientContext.onPaymentDataChanged;
 
     if (requiresShipping) {
@@ -170,11 +145,9 @@ function onClick(googlepayConfig) {
  * Environment
  */
 function getEnvironment() {
-    // return configModel.environment === 'sandbox'
-    //     ? 'TEST'
-    //     : 'PRODUCTION';
-
-    return 'TEST'
+    return clientContext.environment === 'sandbox'
+        ? 'TEST'
+        : 'PRODUCTION';
 }
 
 module.exports = GooglePayment;

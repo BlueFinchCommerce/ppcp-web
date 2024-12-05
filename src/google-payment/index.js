@@ -1,6 +1,5 @@
 const GooglePayment = require("./google-payment");
 const createAssets = require("../lib/create-assets");
-const getConfiguration = require("../lib/get-configuration")
 
 function create(options, element) {
 

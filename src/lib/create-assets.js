@@ -36,7 +36,7 @@ var createAssets = function(url, params, namespace = 'ppcp', pageType, userIdTok
 
             // On load resolve but also emit a global event.
             script.onload = () => {
-                console.log(namespace + ' loaded: ', script.src)
+                console.log('script loaded: ', script.src)
 
                 var event = new CustomEvent("ppcpScriptLoaded", {
                     "detail": namespace

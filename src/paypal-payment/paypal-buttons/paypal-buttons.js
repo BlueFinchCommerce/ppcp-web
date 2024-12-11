@@ -47,7 +47,9 @@ function PaypalButtons(context, element) {
         .then(() => {
             Object.keys(buttons).forEach((funding) => {
                 const buttonSelector = document.getElementById(buttonElement + '-' + funding);
-                if (buttons[funding].isEligible() && buttonSelector) {
+                const elementIsEmpty = buttonSelector.childNodes.length === 0
+
+                if (buttons[funding].isEligible() && buttonSelector && elementIsEmpty) {
                     buttons[funding].render(buttonSelector);
                 }
             });

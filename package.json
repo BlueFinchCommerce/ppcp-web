@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "webpack --watch --mode=development",
     "lint": "eslint src",
+    "lint-fix": "eslint src --fix",
     "prod": "webpack --mode=production"
   },
   "repository": {

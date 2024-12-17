@@ -115,11 +115,6 @@ function createButtons() {
  * @returns {{}|{color: *, shape: *, label: *}}
  */
 function getStyles(funding) {
-    // Return the styles but check for Venmo as the color cannot be gold.
-    // if (funding === 'venmo') {
-    //     return {};
-    // }
-
     const buttonType = funding === 'paypal' ? 'primary' : 'secondary',
         {
             [buttonType]: {
@@ -129,12 +124,11 @@ function getStyles(funding) {
             }
         } = clientContext.buttonStyles || {};
 
-
     return {
         color: buttonColor,
         label: buttonLabel,
         shape: buttonShape,
-        // height: 40  Should we make this configurable
+        height: clientContext.buttonHeight ? clientContext.buttonHeight : 40
     };
 }
 

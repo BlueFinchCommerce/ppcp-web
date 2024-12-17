@@ -32,11 +32,6 @@ function PaypalButtons(context, element) {
         params['components'] += ',messages';
     }
 
-    // Leaving this here for now until I move onto the venmo story as unsure if its needed or not yet in this component
-    // if (this.paymentMethod === 'ppcp_venmo') {
-    //     params['enable-funding'] = 'venmo';
-    // }
-
     if (clientContext.isPayLaterEnabled) {
         params['enable-funding'] = 'paylater';
     }
@@ -120,10 +115,6 @@ function createButtons() {
  * @returns {{}|{color: *, shape: *, label: *}}
  */
 function getStyles(funding) {
-    if (funding === 'venmo') {
-        return {};
-    }
-
     const buttonType = funding === 'paypal' ? 'primary' : 'secondary',
         {
             [buttonType]: {
@@ -133,12 +124,11 @@ function getStyles(funding) {
             }
         } = clientContext.buttonStyles || {};
 
-    // Return the styles but check for Venmo as the color cannot be gold.
     return {
         color: buttonColor,
         label: buttonLabel,
         shape: buttonShape,
-        // height: 40  Should we make this configurable
+        height: clientContext.buttonHeight ? clientContext.buttonHeight : 40
     };
 }
 

@@ -15,7 +15,8 @@ function CardPayment(context, element) {
     const params = {
             'client-id': clientContext.clientId,
             'intent': clientContext.intent,
-            'components': 'card-fields'
+            'components': 'card-fields',
+            'currency': clientContext.currency
         }
 
     createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType)

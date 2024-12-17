@@ -16,7 +16,8 @@ function ApplePayment(context, element) {
     const params = {
             'client-id': clientContext.clientId,
             'intent': clientContext.intent,
-            'components': 'applepay'
+            'components': 'applepay',
+            'currency': clientContext.currency
         }
 
     if (clientContext.environment === 'sandbox') {

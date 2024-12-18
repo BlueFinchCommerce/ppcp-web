@@ -1,7 +1,7 @@
-const PaypalButtons = require("./paypal-buttons");
+const PaypalButtons = require('./paypal-buttons');
 
 function create(options, element) {
-    return new PaypalButtons(options, element);
+  return new PaypalButtons(options, element);
 }
 
 module.exports = create;

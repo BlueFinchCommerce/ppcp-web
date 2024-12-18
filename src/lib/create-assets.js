@@ -1,15 +1,16 @@
 const cache = {};
 // Create a cache of all the loaded scripts so that we don't load them multiple times.
-const createAssets = function (url, params, namespace = 'ppcp', pageType, userIdToken) {
-  const generateKey = (url, namespace, token = '') => url + namespace + token;
+const createAssets = (url, params, namespace, pageType, userIdToken) => {
+  const generateKey = (urlParam, namespaceParam, tokenParam = '') => urlParam + namespaceParam + tokenParam;
 
+  let finalUrl = url;
   if (params) {
-    url = new URL(url);
-    url.search = new URLSearchParams(params);
-    url = decodeURIComponent(url.href);
+    finalUrl = new URL(finalUrl);
+    finalUrl.search = new URLSearchParams(params);
+    finalUrl = decodeURIComponent(finalUrl.href);
   }
 
-  const key = generateKey(url, namespace, userIdToken);
+  const key = generateKey(finalUrl, namespace, userIdToken);
 
   // If the key has already been used return the existing promise that will already be resolved.
   if (cache[key]) {
@@ -20,7 +21,7 @@ const createAssets = function (url, params, namespace = 'ppcp', pageType, userId
   cache[key] = new Promise((resolve) => {
     const script = document.createElement('script');
 
-    script.src = url;
+    script.src = finalUrl;
     script.dataset.namespace = `paypal_${namespace}`;
     script.dataset.partnerAttributionId = 'GENE_PPCP';
     script.dataset.pageType = pageType || 'checkout';
@@ -30,8 +31,6 @@ const createAssets = function (url, params, namespace = 'ppcp', pageType, userId
 
     // On load resolve but also emit a global event.
     script.onload = () => {
-      console.log('script loaded: ', script.src);
-
       const event = new CustomEvent('ppcpScriptLoaded', {
         detail: namespace,
       });

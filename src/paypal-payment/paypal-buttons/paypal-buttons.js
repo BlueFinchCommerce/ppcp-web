@@ -8,6 +8,119 @@ let buttonElement;
 let fundingButtons;
 const buttons = {};
 
+/**
+ * Set available funding sources based on button availability in the DOM.
+ * Filters funding sources and ensures that buttons for those sources exist.
+ *
+ * @returns {Promise<void>}
+ */
+function setFunding() {
+  return new Promise((resolve) => {
+    const fundings = [
+      window[`paypal_${namespace}`].FUNDING.PAYPAL,
+    ];
+
+    if (clientContext.isPayLaterEnabled) {
+      fundings.push(window[`paypal_${namespace}`].FUNDING.PAYLATER);
+    }
+
+    // Filter the funding based on which elements are available.
+    fundingButtons = fundings.filter((funding) => {
+      const buttonSelector = `${buttonElement}-${funding}`;
+      const button = document.getElementById(buttonSelector);
+
+      if (button) {
+        return document.getElementById(buttonSelector);
+      }
+      console.error('Paypal button element does not exist', buttonSelector);
+      return null;
+    });
+
+    resolve();
+  });
+}
+
+/**
+ * Get style configuration for a specific funding button.
+ *
+ * @param {string} funding - The funding source (e.g., 'paypal', 'paylater').
+ * @returns {Object} - Style configuration object for the button.
+ */
+function getStyles(funding) {
+  const buttonType = funding === 'paypal' ? 'primary' : 'secondary';
+  const {
+    [buttonType]: {
+      buttonColor,
+      buttonLabel,
+      buttonShape,
+    },
+  } = clientContext.buttonStyles || {};
+
+  return {
+    color: buttonColor,
+    label: buttonLabel,
+    shape: buttonShape,
+    height: clientContext.buttonHeight ? clientContext.buttonHeight : 40,
+  };
+}
+
+/**
+ * Add messaging configuration for the Pay Later button, if applicable.
+ *
+ * @param {string} funding - The funding source (e.g., 'paylater').
+ * @returns {Object|null} - Messaging configuration object or null if not applicable.
+ */
+function addMessage(funding) {
+  // Only add the paylater messaging on the paylater button, if it's enabled and in the checkout.
+  if ((funding === 'paylater')
+        && clientContext.isPayLaterMessagingEnabled
+        && clientContext.pageType === 'checkout'
+  ) {
+    const config = clientContext.messageStyles.text || {};
+
+    return {
+      align: config.align,
+      amount: clientContext.amount,
+      // Button doesn't support monochrome or greyscale so in either of these cases return black.
+      color: config.color !== 'black' || config.color !== 'white' ? 'black' : config.color,
+    };
+  }
+  return null;
+}
+
+/**
+ * Create PayPal buttons for the available funding sources.
+ *
+ * @returns {Promise<void>}
+ */
+function createButtons() {
+  return new Promise((resolve) => {
+    fundingButtons.forEach((funding) => {
+      const properties = {
+        createOrder: clientContext.createOrder,
+        onApprove: clientContext.onApprove,
+        onClick: clientContext.onClick,
+        onError: clientContext.onError,
+        onShippingAddressChange: clientContext.onShippingAddressChange,
+        onShippingOptionsChange: clientContext.onShippingOptionsChange,
+      };
+
+      properties.fundingSource = funding;
+      properties.style = getStyles(funding);
+      properties.message = addMessage(funding);
+
+      buttons[funding] = window[`paypal_${namespace}`].Buttons(properties);
+    });
+    resolve();
+  });
+}
+
+/**
+ * Initialize and render PayPal buttons in the specified element.
+ *
+ * @param {Object} context - Context containing configuration for the buttons.
+ * @param {string} element - The ID of the DOM element where the buttons will be rendered.
+ */
 function PaypalButtons(context, element) {
   if (!context || !element) {
     throw new Error('PaypalButtons requires both context and element.');
@@ -51,99 +164,6 @@ function PaypalButtons(context, element) {
     .catch((error) => {
       console.error('Error initializing PayPal Buttons:', error);
     });
-}
-
-function setFunding() {
-  return new Promise((resolve, reject) => {
-    const fundings = [
-      window[`paypal_${namespace}`].FUNDING.PAYPAL,
-    ];
-
-    if (clientContext.isPayLaterEnabled) {
-      fundings.push(window[`paypal_${namespace}`].FUNDING.PAYLATER);
-    }
-
-    // Filter the funding based on which elements are available.
-    fundingButtons = fundings.filter((funding) => {
-      const buttonSelector = `${buttonElement}-${funding}`;
-      const button = document.getElementById(buttonSelector);
-
-      if (button) {
-        return document.getElementById(buttonSelector);
-      }
-      console.error('Paypal button element does not exist', buttonSelector);
-    });
-
-    resolve();
-  });
-}
-
-/**
- * Create express buttons
- *
- */
-function createButtons() {
-  return new Promise((resolve, reject) => {
-    fundingButtons.forEach((funding) => {
-      const properties = {
-        createOrder: clientContext.createOrder,
-        onApprove: clientContext.onApprove,
-        onClick: clientContext.onClick,
-        onError: clientContext.onError,
-        onShippingAddressChange: clientContext.onShippingAddressChange,
-        onShippingOptionsChange: clientContext.onShippingOptionsChange,
-      };
-
-      properties.fundingSource = funding;
-      properties.style = getStyles(funding);
-      properties.message = addMessage(funding);
-
-      buttons[funding] = window[`paypal_${namespace}`].Buttons(properties);
-    });
-    resolve();
-  });
-}
-
-/**
- * Get styles
- *
- * @param config
- * @param funding
- * @returns {{}|{color: *, shape: *, label: *}}
- */
-function getStyles(funding) {
-  const buttonType = funding === 'paypal' ? 'primary' : 'secondary';
-  const {
-    [buttonType]: {
-      buttonColor,
-      buttonLabel,
-      buttonShape,
-    },
-  } = clientContext.buttonStyles || {};
-
-  return {
-    color: buttonColor,
-    label: buttonLabel,
-    shape: buttonShape,
-    height: clientContext.buttonHeight ? clientContext.buttonHeight : 40,
-  };
-}
-
-function addMessage(funding) {
-  // Only add the paylater messaging on the paylater button, if it's enabled and in the checkout.
-  if ((funding === 'paylater')
-        && clientContext.isPayLaterMessagingEnabled
-        && clientContext.pageType === 'checkout'
-  ) {
-    const config = clientContext.messageStyles.text || {};
-
-    return {
-      align: config.align,
-      amount: clientContext.amount,
-      // Button doesn't support monochrome or greyscale so in either of these cases return black.
-      color: config.color !== 'black' || config.color !== 'white' ? 'black' : config.color,
-    };
-  }
 }
 
 module.exports = PaypalButtons;

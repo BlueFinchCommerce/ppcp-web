@@ -3,49 +3,26 @@ const createAssets = require('../lib/create-assets');
 let clientContext;
 let googlePayClient;
 
-function GooglePayment(context, element) {
-  if (!context || !element) {
-    throw new Error('Google Payments requires both context and element.');
-  }
-
-  if (typeof context.placeOrder !== 'function') {
-    return console.error('PPCP Google Pay Context passed does not provide a placeOrder method', context);
-  }
-
-  clientContext = context;
-
-  const params = {
-    'client-id': clientContext.clientId,
-    intent: clientContext.intent,
-    components: 'googlepay',
-    currency: clientContext.transactionInfo.currencyCode,
-  };
-
-  if (clientContext.environment === 'sandbox') {
-    params['buyer-country'] = clientContext.buyerCountry;
-  }
-
-  // Create Assets
-  createAssets.create('https://www.paypal.com/sdk/js', params, 'ppcp_googlepay', clientContext.pageType)
-    .then(() => deviceSupported())
-    .then((googlepayConfig) => createGooglePayClient(googlepayConfig))
-    .then((googlepayConfig) => createGooglePayButton(googlepayConfig))
-    .then((googlePayButton) => {
-      if (googlePayButton) {
-        const htmlElement = document.getElementById(element);
-        htmlElement.appendChild(googlePayButton); // Append button
-      }
-    })
-    .catch((error) => {
-      console.error('Error initializing Google Pay Button:', error);
-    });
+/**
+ * Determines the Google Pay environment (TEST or PRODUCTION) based on the client context.
+ * @returns {string} The environment string ('TEST' or 'PRODUCTION').
+ */
+function getEnvironment() {
+  return clientContext.environment === 'sandbox'
+    ? 'TEST'
+    : 'PRODUCTION';
 }
 
+/**
+ * Checks if the device supports Google Pay and configures payment methods.
+ * Ensures the page is served over HTTPS.
+ * @returns {Promise<object>} Resolves with Google Pay configuration if the device is supported.
+ */
 function deviceSupported() {
   return new Promise((resolve, reject) => {
-    if (location.protocol !== 'https:') {
+    if (window.location.protocol !== 'https:') {
       console.warn('Google Pay requires your checkout be served over HTTPS');
-      return false;
+      reject();
     }
 
     const googlepay = window.paypal_ppcp_googlepay.Googlepay();
@@ -54,7 +31,8 @@ function deviceSupported() {
       .then((googlepayConfig) => {
         if (googlepayConfig.isEligible) {
           googlepayConfig.allowedPaymentMethods.forEach((method) => {
-            method.parameters.billingAddressParameters.phoneNumberRequired = true;
+            const parameters = method.parameters.billingAddressParameters;
+            parameters.phoneNumberRequired = true;
           });
           resolve(googlepayConfig);
         } else {
@@ -64,13 +42,20 @@ function deviceSupported() {
   });
 }
 
+/**
+ * Creates a Google Pay client and checks if Google Pay is ready to be used.
+ * @param {object} googlepayConfig - Google Pay configuration data.
+ * @returns {Promise<object|null>} Resolves with the configuration if ready; otherwise null.
+ */
 function createGooglePayClient(googlepayConfig) {
   const paymentDataCallbacks = {
     onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepayConfig),
   };
 
   if (clientContext.onPaymentDataChanged) {
-    paymentDataCallbacks.onPaymentDataChanged = (data) => clientContext.onPaymentDataChanged(data, googlepayConfig);
+    paymentDataCallbacks.onPaymentDataChanged = (data) => {
+      clientContext.onPaymentDataChanged(data, googlepayConfig);
+    };
   }
 
   googlePayClient = new window.google.payments.api.PaymentsClient({
@@ -86,20 +71,17 @@ function createGooglePayClient(googlepayConfig) {
     if (response.result) {
       return googlepayConfig;
     }
+    return null;
   });
 }
 
-function createGooglePayButton(googlepayConfig) {
-  return googlePayClient.createButton({
-    allowedPaymentMethods: googlepayConfig.allowedPaymentMethods,
-    buttonColor: clientContext.button.buttonColor.toLowerCase(),
-    buttonSizeMode: 'fill',
-    onClick: clientContext.beforeOnClick
-      ? () => clientContext.beforeOnClick().then(() => onClick(googlepayConfig))
-      : () => onClick(googlepayConfig),
-  });
-}
-
+/**
+ * Handles the onClick event for the Google Pay button.
+ * Builds a payment data request and loads payment data.
+ * @param {object} googlepayConfig - Google Pay configuration data.
+ * @returns {Promise|boolean} Returns false if validation fails;
+ * otherwise, initiates the payment request.
+ */
 function onClick(googlepayConfig) {
   if (clientContext.validateAdditionalValidators && !clientContext.validateAdditionalValidators()) {
     return false;
@@ -138,12 +120,63 @@ function onClick(googlepayConfig) {
 }
 
 /**
- * Environment
+ * Creates a Google Pay button with the specified configuration.
+ * @param {object} googlepayConfig - Google Pay configuration data.
+ * @returns {Element} A Google Pay button element ready to be added to the DOM.
  */
-function getEnvironment() {
-  return clientContext.environment === 'sandbox'
-    ? 'TEST'
-    : 'PRODUCTION';
+function createGooglePayButton(googlepayConfig) {
+  return googlePayClient.createButton({
+    allowedPaymentMethods: googlepayConfig.allowedPaymentMethods,
+    buttonColor: clientContext.button.buttonColor.toLowerCase(),
+    buttonSizeMode: 'fill',
+    onClick: clientContext.beforeOnClick
+      ? () => clientContext.beforeOnClick().then(() => onClick(googlepayConfig))
+      : () => onClick(googlepayConfig),
+  });
+}
+
+/**
+ * Initializes and renders a Google Pay button in the specified DOM element.
+ * This is the main entry point for integrating Google Pay.
+ * @param {object} context - The client context containing payment and configuration details.
+ * @param {string} element - The DOM element ID where the Google Pay button will be rendered.
+ */
+function GooglePayment(context, element) {
+  if (!context || !element) {
+    throw new Error('Google Payments requires both context and element.');
+  }
+
+  if (typeof context.placeOrder !== 'function') {
+    return console.error('PPCP Google Pay Context passed does not provide a placeOrder method', context);
+  }
+
+  clientContext = context;
+
+  const params = {
+    'client-id': clientContext.clientId,
+    intent: clientContext.intent,
+    components: 'googlepay',
+    currency: clientContext.transactionInfo.currencyCode,
+  };
+
+  if (clientContext.environment === 'sandbox') {
+    params['buyer-country'] = clientContext.buyerCountry;
+  }
+
+  // Create Assets
+  createAssets.create('https://www.paypal.com/sdk/js', params, 'ppcp_googlepay', clientContext.pageType)
+    .then(() => deviceSupported())
+    .then((googlepayConfig) => createGooglePayClient(googlepayConfig))
+    .then((googlepayConfig) => createGooglePayButton(googlepayConfig))
+    .then((googlePayButton) => {
+      if (googlePayButton) {
+        const htmlElement = document.getElementById(element);
+        htmlElement.appendChild(googlePayButton); // Append button
+      }
+    })
+    .catch((error) => {
+      console.error('Error initializing Google Pay Button:', error);
+    });
 }
 
 module.exports = GooglePayment;

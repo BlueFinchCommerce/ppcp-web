@@ -7,7 +7,9 @@ let buttonElement;
 let button;
 
 /**
- * Create express buttons
+ * Create a Venmo payment button.
+ *
+ * @returns {Promise<void>} - Resolves when the Venmo button is created.
  */
 function createButton() {
   return new Promise((resolve) => {
@@ -27,6 +29,9 @@ function createButton() {
 
 /**
  * Initialize and render a Venmo payment button.
+ *
+ * @param {Object} context - Configuration context for Venmo payment.
+ * @param {string} element - ID of the DOM element where the button will be rendered.
  */
 function VenmoPayment(context, element) {
   if (!context || !element) {

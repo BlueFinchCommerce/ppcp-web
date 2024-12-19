@@ -47,9 +47,8 @@ function setFunding() {
  * @returns {Object} - Style configuration object for the button.
  */
 function getStyles(funding) {
-  const buttonType = funding === 'paypal' ? 'primary' : 'secondary';
   const {
-    [buttonType]: {
+    [funding]: {
       buttonColor,
       buttonLabel,
       buttonShape,
@@ -73,8 +72,8 @@ function getStyles(funding) {
 function addMessage(funding) {
   // Only add the paylater messaging on the paylater button, if it's enabled and in the checkout.
   if ((funding === 'paylater')
-        && clientContext.isPayLaterMessagingEnabled
-        && clientContext.pageType === 'checkout'
+          && clientContext.isPayLaterMessagingEnabled
+          && clientContext.pageType === 'checkout'
   ) {
     const config = clientContext.messageStyles.text || {};
 
@@ -100,9 +99,10 @@ function createButtons() {
         createOrder: clientContext.createOrder,
         onApprove: clientContext.onApprove,
         onClick: clientContext.onClick,
-        onError: clientContext.onError,
-        onShippingAddressChange: clientContext.onShippingAddressChange,
-        onShippingOptionsChange: clientContext.onShippingOptionsChange,
+        onCancel: clientContext.onCancel,
+        onError: (err) => clientContext.onError(err),
+        onShippingAddressChange: (data) => clientContext.onShippingAddressChange(data),
+        onShippingOptionsChange: (data) => clientContext.onShippingOptionsChange(data),
       };
 
       properties.fundingSource = funding;
@@ -130,13 +130,14 @@ function PaypalButtons(context, element) {
   buttonElement = element;
 
   const params = {
-    'client-id': clientContext.clientId,
+    'client-id': clientContext.productionClientId,
     intent: clientContext.intent,
     components: 'buttons',
     currency: clientContext.currency,
   };
 
   if (clientContext.environment === 'sandbox') {
+    params['client-id'] = clientContext.sandboxClientId;
     params['buyer-country'] = clientContext.buyerCountry;
   }
 

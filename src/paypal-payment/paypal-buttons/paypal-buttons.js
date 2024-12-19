@@ -17,13 +17,14 @@ function PaypalButtons(context, element) {
   buttonElement = element;
 
   const params = {
-    'client-id': clientContext.clientId,
+    'client-id': clientContext.productionClientId,
     intent: clientContext.intent,
     components: 'buttons',
     currency: clientContext.currency,
   };
 
   if (clientContext.environment === 'sandbox') {
+    params['client-id'] = clientContext.sandboxClientId;
     params['buyer-country'] = clientContext.buyerCountry;
   }
 
@@ -89,9 +90,10 @@ function createButtons() {
         createOrder: clientContext.createOrder,
         onApprove: clientContext.onApprove,
         onClick: clientContext.onClick,
-        onError: clientContext.onError,
-        onShippingAddressChange: clientContext.onShippingAddressChange,
-        onShippingOptionsChange: clientContext.onShippingOptionsChange,
+        onCancel: clientContext.onCancel,
+        onError: (err) => clientContext.onError(err),
+        onShippingAddressChange: (data) => clientContext.onShippingAddressChange(data),
+        onShippingOptionsChange: (data) => clientContext.onShippingOptionsChange(data),
       };
 
       properties.fundingSource = funding;
@@ -112,9 +114,8 @@ function createButtons() {
  * @returns {{}|{color: *, shape: *, label: *}}
  */
 function getStyles(funding) {
-  const buttonType = funding === 'paypal' ? 'primary' : 'secondary';
   const {
-    [buttonType]: {
+    [funding]: {
       buttonColor,
       buttonLabel,
       buttonShape,

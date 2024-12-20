@@ -22,7 +22,8 @@ function deviceSupported() {
   return new Promise((resolve, reject) => {
     if (window.location.protocol !== 'https:') {
       console.warn('Google Pay requires your checkout be served over HTTPS');
-      reject();
+      reject(new Error('Insecure protocol: HTTPS is required for Google Pay'));
+      return;
     }
 
     const googlepay = window.paypal_ppcp_googlepay.Googlepay();
@@ -31,13 +32,16 @@ function deviceSupported() {
       .then((googlepayConfig) => {
         if (googlepayConfig.isEligible) {
           googlepayConfig.allowedPaymentMethods.forEach((method) => {
-            const parameters = method.parameters.billingAddressParameters;
-            parameters.phoneNumberRequired = true;
+            //  eslint-disable-next-line no-param-reassign
+            method.parameters.billingAddressParameters.phoneNumberRequired = true;
           });
           resolve(googlepayConfig);
         } else {
-          reject();
+          reject(new Error('Device not eligible for Google Pay'));
         }
+      })
+      .catch((error) => {
+        reject(error);
       });
   });
 }
@@ -82,7 +86,7 @@ function createGooglePayClient(googlepayConfig) {
  * @returns {Promise|boolean} Returns false if validation fails;
  * otherwise, initiates the payment request.
  */
-function onClick(googlepayConfig) {
+async function onClick(googlepayConfig) {
   if (clientContext.validateAdditionalValidators && !clientContext.validateAdditionalValidators()) {
     return false;
   }
@@ -100,7 +104,7 @@ function onClick(googlepayConfig) {
     countryCode: googlepayConfig.countryCode,
     currencyCode: clientContext.transactionInfo.currencyCode,
     totalPriceStatus: clientContext.transactionInfo.totalPriceStatus,
-    totalPrice: parseFloat(clientContext.transactionInfo.totalPrice).toFixed(2),
+    totalPrice: clientContext.transactionInfo.totalPrice,
   };
   paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
   paymentDataRequest.shippingAddressRequired = !!requiresShipping;
@@ -153,13 +157,14 @@ function GooglePayment(context, element) {
   clientContext = context;
 
   const params = {
-    'client-id': clientContext.clientId,
+    'client-id': clientContext.productionClientId,
     intent: clientContext.intent,
     components: 'googlepay',
     currency: clientContext.transactionInfo.currencyCode,
   };
 
   if (clientContext.environment === 'sandbox') {
+    params['client-id'] = clientContext.sandboxClientId;
     params['buyer-country'] = clientContext.buyerCountry;
   }
 

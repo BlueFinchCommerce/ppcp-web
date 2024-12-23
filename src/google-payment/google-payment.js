@@ -2,6 +2,7 @@ const createAssets = require('../lib/create-assets');
 
 let clientContext;
 let googlePayClient;
+let googlepay;
 
 /**
  * Determines the Google Pay environment (TEST or PRODUCTION) based on the client context.
@@ -26,7 +27,7 @@ function deviceSupported() {
       return;
     }
 
-    const googlepay = window.paypal_ppcp_googlepay.Googlepay();
+    googlepay = window.paypal_ppcp_googlepay.Googlepay();
 
     googlepay.config()
       .then((googlepayConfig) => {
@@ -53,13 +54,13 @@ function deviceSupported() {
  */
 function createGooglePayClient(googlepayConfig) {
   const paymentDataCallbacks = {
-    onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepayConfig),
+    onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepay),
   };
 
   if (clientContext.onPaymentDataChanged) {
-    paymentDataCallbacks.onPaymentDataChanged = (data) => {
-      clientContext.onPaymentDataChanged(data, googlepayConfig);
-    };
+    paymentDataCallbacks.onPaymentDataChanged = (data) => (
+      clientContext.onPaymentDataChanged(data, googlepayConfig)
+    );
   }
 
   googlePayClient = new window.google.payments.api.PaymentsClient({
@@ -86,7 +87,7 @@ function createGooglePayClient(googlepayConfig) {
  * @returns {Promise|boolean} Returns false if validation fails;
  * otherwise, initiates the payment request.
  */
-async function onClick(googlepayConfig) {
+function onClick(googlepayConfig) {
   if (clientContext.validateAdditionalValidators && !clientContext.validateAdditionalValidators()) {
     return false;
   }
@@ -117,9 +118,20 @@ async function onClick(googlepayConfig) {
   delete paymentDataRequest.countryCode;
   delete paymentDataRequest.isEligible;
 
-  return googlePayClient.loadPaymentData(paymentDataRequest)
-    .catch((err) => {
-      console.warn(err);
+  return googlePayClient
+    .loadPaymentData(paymentDataRequest)
+    .catch((error) => {
+      if (error.statusCode === 'CANCELED' || error.name === 'AbortError') {
+        console.warn('User canceled the Google Pay payment UI');
+        if (clientContext.onCancel) {
+          clientContext.onCancel();
+        }
+      } else {
+        console.error('Google Pay Error:', error);
+        if (clientContext.onError) {
+          clientContext.onError(error);
+        }
+      }
     });
 }
 

@@ -71,10 +71,12 @@ function showApplePay() {
     if (window.location.protocol !== 'https:') {
       console.warn('PPCP Apple Pay requires your checkout be served over HTTPS');
       reject();
+      return;
     }
     if ((window.ApplePaySession && window.ApplePaySession.canMakePayments()) !== true) {
       console.warn('PPCP Apple Pay is not supported on this device/browser');
       reject();
+      return;
     }
 
     const applepay = window[`paypal_${namespace}`].Applepay();

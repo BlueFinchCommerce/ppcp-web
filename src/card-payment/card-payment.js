@@ -2,6 +2,7 @@ const createAssets = require('../lib/create-assets');
 
 const namespace = 'ppcp_card_new';
 let clientContext;
+let buttonElement;
 
 /**
  * Render card payment fields.
@@ -48,32 +49,24 @@ function renderFields(cardFields) {
       expiryField.render(clientExpiryField.id);
     }
 
-    document.querySelector(clientContext.submitButtonId).addEventListener('click', () => {
-      const isValid = clientContext.runAdditionalValidators();
-      if (isValid) {
-        cardFields.getState().then((data) => {
-          if (data.isFormValid) {
-            cardFields.submit().then(() => {
-              // Submit success
-            }).catch((error) => {
-              console.error(error);
-              clientContext.displayErrorMessage('Cannot validate payment.');
-            });
-          } else {
-            let errorString = '';
+    document.querySelector(buttonElement).addEventListener('click', async () => {
+      try {
+        const isValid = await clientContext.onValidate();
+        const data = await cardFields.getState();
 
-            if (data.errors.includes('INVALID_NUMBER')) {
-              errorString += 'Card number is not valid.';
-            }
-            if (data.errors.includes('INVALID_EXPIRY')) {
-              errorString += ' Expiry date is not valid.';
-            }
-            if (data.errors.includes('INVALID_CVV')) {
-              errorString += ' CVV is not valid.';
-            }
-            clientContext.displayErrorMessage(errorString);
+        if (data.isFormValid && isValid) {
+          try {
+            await cardFields.submit();
+            // Submit success
+          } catch (error) {
+            console.error(error);
+            clientContext.handleErrors('Cannot validate payment.');
           }
-        });
+        } else {
+          clientContext.handleErrors(data.errors);
+        }
+      } catch (error) {
+        console.error('Validation error:', error);
       }
     });
   }
@@ -90,9 +83,6 @@ function createFields() {
       },
       onApprove() {
         return clientContext.onApprove();
-      },
-      onError() {
-        return clientContext.onError();
       },
       style: clientContext.style,
     });
@@ -111,13 +101,19 @@ function CardPayment(context, element) {
   }
 
   clientContext = context;
+  buttonElement = element;
 
   const params = {
-    'client-id': clientContext.clientId,
+    'client-id': clientContext.productionClientId,
     intent: clientContext.intent,
     components: 'card-fields',
     currency: clientContext.currency,
   };
+
+  if (clientContext.environment === 'sandbox') {
+    params['client-id'] = clientContext.sandboxClientId;
+    params['buyer-country'] = clientContext.buyerCountry;
+  }
 
   createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType)
     .then(() => createFields());

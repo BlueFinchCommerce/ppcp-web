@@ -71,29 +71,32 @@ function showApplePay() {
     if (window.location.protocol !== 'https:') {
       console.warn('PPCP Apple Pay requires your checkout be served over HTTPS');
       reject();
+      return;
     }
     if ((window.ApplePaySession && window.ApplePaySession.canMakePayments()) !== true) {
       console.warn('PPCP Apple Pay is not supported on this device/browser');
       reject();
+      return;
     }
 
     const applepay = window[`paypal_${namespace}`].Applepay();
-
     applepay.config()
       .then((applepayConfig) => {
-        if (applepayConfig.isEligible) {
-          paymentRequest = clientContext.getPaymentRequest(applepayConfig);
-          resolve();
-        } else {
+        if (!applepayConfig.isEligible) {
           console.warn('PPCP Apple Pay is not eligible');
           reject();
         }
+
+        return clientContext.getPaymentRequest(applepayConfig);
+      })
+      .then((paymentRequestData) => {
+        paymentRequest = paymentRequestData;
+        resolve();
       })
       .catch(() => {
         console.error('Error while fetching Apple Pay configuration.');
         reject();
       });
-    resolve();
   });
 }
 
@@ -112,13 +115,14 @@ function ApplePayment(context, element) {
   buttonElement = element;
 
   const params = {
-    'client-id': clientContext.clientId,
+    'client-id': clientContext.productionClientId,
     intent: clientContext.intent,
     components: 'applepay',
     currency: clientContext.currency,
   };
 
   if (clientContext.environment === 'sandbox') {
+    params['client-id'] = clientContext.sandboxClientId;
     params['buyer-country'] = clientContext.buyerCountry;
   }
 

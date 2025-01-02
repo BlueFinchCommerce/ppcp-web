@@ -77,12 +77,12 @@ function showApplePay() {
   return new Promise((resolve, reject) => {
     if (window.location.protocol !== 'https:') {
       console.warn('PPCP Apple Pay requires your checkout be served over HTTPS');
-      reject();
+      reject(new Error('Apple Pay requires HTTPS.'));
       return;
     }
     if ((window.ApplePaySession && window.ApplePaySession.canMakePayments()) !== true) {
       console.warn('PPCP Apple Pay is not supported on this device/browser');
-      reject();
+      reject(new Error('Apple Pay is not supported on this device/browser.'));
       return;
     }
 
@@ -91,18 +91,19 @@ function showApplePay() {
       .then((applepayConfig) => {
         if (!applepayConfig.isEligible) {
           console.warn('PPCP Apple Pay is not eligible');
-          reject();
+          reject(new Error('Apple Pay is not eligible.'));
+          return;
         }
-
+        
         return clientContext.getPaymentRequest(applepayConfig);
       })
       .then((paymentRequestData) => {
         paymentRequest = paymentRequestData;
         resolve();
       })
-      .catch(() => {
-        console.error('Error while fetching Apple Pay configuration.');
-        reject();
+      .catch((err) => {
+        console.error('Error while fetching Apple Pay configuration:', err);
+        reject(new Error('Error fetching Apple Pay configuration.'));
       });
   });
 }

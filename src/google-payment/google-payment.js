@@ -88,51 +88,55 @@ function createGooglePayClient(googlepayConfig) {
  * otherwise, initiates the payment request.
  */
 function onClick(googlepayConfig) {
-  if (clientContext.validateAdditionalValidators && !clientContext.validateAdditionalValidators()) {
-    return false;
-  }
-
-  const paymentDataRequest = { ...googlepayConfig };
-  const callbackIntents = ['PAYMENT_AUTHORIZATION'];
-  const requiresShipping = clientContext.onPaymentDataChanged;
-
-  if (requiresShipping) {
-    callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
-  }
-
-  paymentDataRequest.allowedPaymentMethods = googlepayConfig.allowedPaymentMethods;
-  paymentDataRequest.transactionInfo = {
-    countryCode: googlepayConfig.countryCode,
-    currencyCode: clientContext.transactionInfo.currencyCode,
-    totalPriceStatus: clientContext.transactionInfo.totalPriceStatus,
-    totalPrice: clientContext.transactionInfo.totalPrice,
-  };
-  paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
-  paymentDataRequest.shippingAddressRequired = !!requiresShipping;
-  paymentDataRequest.shippingAddressParameters = {
-    phoneNumberRequired: !!requiresShipping,
-  };
-  paymentDataRequest.emailRequired = true;
-  paymentDataRequest.shippingOptionRequired = !!requiresShipping;
-  paymentDataRequest.callbackIntents = callbackIntents;
-  delete paymentDataRequest.countryCode;
-  delete paymentDataRequest.isEligible;
-
-  return googlePayClient
-    .loadPaymentData(paymentDataRequest)
-    .catch((error) => {
-      if (error.statusCode === 'CANCELED' || error.name === 'AbortError') {
-        console.warn('User canceled the Google Pay payment UI');
-        if (clientContext.onCancel) {
-          clientContext.onCancel();
+  clientContext.onValidate().then((isValid) => {
+    if (!isValid) {
+      return false; // Stop further processing
+    }
+    // Proceed with the normal onClick logic
+    const paymentDataRequest = { ...googlepayConfig };
+    const callbackIntents = ['PAYMENT_AUTHORIZATION'];
+    const requiresShipping = clientContext.onPaymentDataChanged;
+    
+    if (requiresShipping) {
+      callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
+    }
+    
+    paymentDataRequest.allowedPaymentMethods = googlepayConfig.allowedPaymentMethods;
+    paymentDataRequest.transactionInfo = {
+      countryCode: googlepayConfig.countryCode,
+      currencyCode: clientContext.transactionInfo.currencyCode,
+      totalPriceStatus: clientContext.transactionInfo.totalPriceStatus,
+      totalPrice: clientContext.transactionInfo.totalPrice,
+    };
+    paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
+    paymentDataRequest.shippingAddressRequired = !!requiresShipping;
+    paymentDataRequest.shippingAddressParameters = {
+      phoneNumberRequired: !!requiresShipping,
+    };
+    paymentDataRequest.emailRequired = true;
+    paymentDataRequest.shippingOptionRequired = !!requiresShipping;
+    paymentDataRequest.callbackIntents = callbackIntents;
+    delete paymentDataRequest.countryCode;
+    delete paymentDataRequest.isEligible;
+    
+    googlePayClient
+      .loadPaymentData(paymentDataRequest)
+      .catch((error) => {
+        if (error.statusCode === 'CANCELED' || error.name === 'AbortError') {
+          console.warn('User canceled the Google Pay payment UI');
+          if (clientContext.onCancel) {
+            clientContext.onCancel();
+          }
+        } else {
+          console.error('Google Pay Error:', error);
+          if (clientContext.onError) {
+            clientContext.onError(error);
+          }
         }
-      } else {
-        console.error('Google Pay Error:', error);
-        if (clientContext.onError) {
-          clientContext.onError(error);
-        }
-      }
-    });
+      });
+  }).catch((error) => {
+    console.error('Validation error:', error);
+  });
 }
 
 /**

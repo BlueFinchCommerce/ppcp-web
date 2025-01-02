@@ -2,6 +2,7 @@ const createAssets = require('../lib/create-assets');
 
 let clientContext;
 let googlePayClient;
+let googlepay;
 
 /**
  * Determines the Google Pay environment (TEST or PRODUCTION) based on the client context.
@@ -22,22 +23,26 @@ function deviceSupported() {
   return new Promise((resolve, reject) => {
     if (window.location.protocol !== 'https:') {
       console.warn('Google Pay requires your checkout be served over HTTPS');
-      reject();
+      reject(new Error('Insecure protocol: HTTPS is required for Google Pay'));
+      return;
     }
 
-    const googlepay = window.paypal_ppcp_googlepay.Googlepay();
+    googlepay = window.paypal_ppcp_googlepay.Googlepay();
 
     googlepay.config()
       .then((googlepayConfig) => {
         if (googlepayConfig.isEligible) {
           googlepayConfig.allowedPaymentMethods.forEach((method) => {
-            const parameters = method.parameters.billingAddressParameters;
-            parameters.phoneNumberRequired = true;
+            //  eslint-disable-next-line no-param-reassign
+            method.parameters.billingAddressParameters.phoneNumberRequired = true;
           });
           resolve(googlepayConfig);
         } else {
-          reject();
+          reject(new Error('Device not eligible for Google Pay'));
         }
+      })
+      .catch((error) => {
+        reject(error);
       });
   });
 }
@@ -49,13 +54,13 @@ function deviceSupported() {
  */
 function createGooglePayClient(googlepayConfig) {
   const paymentDataCallbacks = {
-    onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepayConfig),
+    onPaymentAuthorized: (data) => clientContext.onPaymentAuthorized(data, googlepay),
   };
 
   if (clientContext.onPaymentDataChanged) {
-    paymentDataCallbacks.onPaymentDataChanged = (data) => {
-      clientContext.onPaymentDataChanged(data, googlepayConfig);
-    };
+    paymentDataCallbacks.onPaymentDataChanged = (data) => (
+      clientContext.onPaymentDataChanged(data, googlepayConfig)
+    );
   }
 
   googlePayClient = new window.google.payments.api.PaymentsClient({
@@ -100,7 +105,7 @@ function onClick(googlepayConfig) {
     countryCode: googlepayConfig.countryCode,
     currencyCode: clientContext.transactionInfo.currencyCode,
     totalPriceStatus: clientContext.transactionInfo.totalPriceStatus,
-    totalPrice: parseFloat(clientContext.transactionInfo.totalPrice).toFixed(2),
+    totalPrice: clientContext.transactionInfo.totalPrice,
   };
   paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
   paymentDataRequest.shippingAddressRequired = !!requiresShipping;
@@ -113,9 +118,20 @@ function onClick(googlepayConfig) {
   delete paymentDataRequest.countryCode;
   delete paymentDataRequest.isEligible;
 
-  return googlePayClient.loadPaymentData(paymentDataRequest)
-    .catch((err) => {
-      console.warn(err);
+  return googlePayClient
+    .loadPaymentData(paymentDataRequest)
+    .catch((error) => {
+      if (error.statusCode === 'CANCELED' || error.name === 'AbortError') {
+        console.warn('User canceled the Google Pay payment UI');
+        if (clientContext.onCancel) {
+          clientContext.onCancel();
+        }
+      } else {
+        console.error('Google Pay Error:', error);
+        if (clientContext.onError) {
+          clientContext.onError(error);
+        }
+      }
     });
 }
 
@@ -153,13 +169,14 @@ function GooglePayment(context, element) {
   clientContext = context;
 
   const params = {
-    'client-id': clientContext.clientId,
+    'client-id': clientContext.productionClientId,
     intent: clientContext.intent,
     components: 'googlepay',
     currency: clientContext.transactionInfo.currencyCode,
   };
 
   if (clientContext.environment === 'sandbox') {
+    params['client-id'] = clientContext.sandboxClientId;
     params['buyer-country'] = clientContext.buyerCountry;
   }
 

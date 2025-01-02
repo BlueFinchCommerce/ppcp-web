@@ -12,33 +12,40 @@ let paymentRequest;
  * and payment authorisation.
  */
 function start() {
-  const session = new window.ApplePaySession(4, paymentRequest);
-  const applepay = window[`paypal_${namespace}`].Applepay();
-
-  session.onvalidatemerchant = (event) => {
-    applepay.validateMerchant({
-      validationUrl: event.validationURL,
-    }).then((payload) => {
-      session.completeMerchantValidation(payload.merchantSession);
-    }).catch((err) => {
-      console.error(err);
-      session.abort();
-    });
-  };
-
-  session.onshippingcontactselected = (event) => {
-    clientContext.onShippingContactSelect(event, session);
-  };
-
-  session.onshippingmethodselected = (event) => {
-    clientContext.onShippingMethodSelect(event, session);
-  };
-
-  session.onpaymentauthorized = async (event) => {
-    clientContext.onPaymentAuthorized(event, session, applepay);
-  };
-
-  session.begin();
+  // Perform validation before starting the session
+  clientContext.onValidate().then((isValid) => {
+    if (!isValid) {
+      return; // Exit early if validation fails
+    }
+    
+    const session = new window.ApplePaySession(4, paymentRequest);
+    const applepay = window[`paypal_${namespace}`].Applepay();
+    
+    session.onvalidatemerchant = (event) => {
+      applepay.validateMerchant({
+        validationUrl: event.validationURL,
+      }).then((payload) => {
+        session.completeMerchantValidation(payload.merchantSession);
+      }).catch((err) => {
+        console.error(err);
+        session.abort();
+      });
+    };
+    
+    session.onshippingcontactselected = (event) => {
+      clientContext.onShippingContactSelect(event, session);
+    };
+    
+    session.onshippingmethodselected = (event) => {
+      clientContext.onShippingMethodSelect(event, session);
+    };
+    
+    session.onpaymentauthorized = async (event) => {
+      clientContext.onPaymentAuthorized(event, session, applepay);
+    };
+    
+    session.begin();
+  })
 }
 
 /**

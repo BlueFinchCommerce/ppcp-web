@@ -7,6 +7,21 @@ let buttonElement;
 let button;
 
 /**
+ * Get style configuration for button.
+ *
+ * @returns {Object} - Style configuration object for the button.
+ */
+function getStyles() {
+  const styles = clientContext.buttonStyles;
+  return {
+    color: styles.buttonColor === 'gold' ? 'blue' : styles.buttonColor,
+    label: styles.buttonLabel,
+    shape: styles.buttonShape,
+    height: clientContext.buttonHeight ? clientContext.buttonHeight : 40,
+  };
+}
+
+/**
  * Create a Venmo payment button.
  *
  * @returns {Promise<void>} - Resolves when the Venmo button is created.
@@ -21,6 +36,8 @@ function createButton() {
       onError: clientContext.onError,
       fundingSource: funding,
     };
+
+    properties.style = getStyles();
 
     button = window[`paypal_${namespace}`].Buttons(properties);
     resolve();
@@ -42,7 +59,7 @@ function VenmoPayment(context, element) {
   buttonElement = element;
 
   const params = {
-    'client-id': clientContext.clientId,
+    'client-id': clientContext.productionClientId,
     intent: clientContext.intent,
     components: 'buttons',
     currency: clientContext.currency,
@@ -50,6 +67,7 @@ function VenmoPayment(context, element) {
   };
 
   if (clientContext.environment === 'sandbox') {
+    params['client-id'] = clientContext.sandboxClientId;
     params['buyer-country'] = clientContext.buyerCountry;
   }
 

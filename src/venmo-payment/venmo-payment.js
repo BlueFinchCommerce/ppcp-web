@@ -34,6 +34,7 @@ function createButton() {
       onApprove: clientContext.onApprove,
       onClick: clientContext.onClick,
       onError: clientContext.onError,
+      onCancel: clientContext.onCancel,
       fundingSource: funding,
     };
 

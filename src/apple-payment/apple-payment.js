@@ -12,45 +12,50 @@ let paymentRequest;
  * and payment authorisation.
  */
 function start() {
-  // Perform validation before starting the session
-  clientContext.onValidate().then((isValid) => {
-    if (!isValid) {
-      return; // Exit early if validation fails
-    }
-    
-    const session = new window.ApplePaySession(4, paymentRequest);
-    const applepay = window[`paypal_${namespace}`].Applepay();
-    
-    session.onvalidatemerchant = (event) => {
-      applepay.validateMerchant({
-        validationUrl: event.validationURL,
-      }).then((payload) => {
-        session.completeMerchantValidation(payload.merchantSession);
-      }).catch((err) => {
-        console.error(err);
-        clientContext.clearAddress();
-        session.abort();
-      });
-    };
-    
-    session.onshippingcontactselected = (event) => {
-      clientContext.onShippingContactSelect(event, session);
-    };
-    
-    session.onshippingmethodselected = (event) => {
-      clientContext.onShippingMethodSelect(event, session);
-    };
-    
-    session.onpaymentauthorized = async (event) => {
-      clientContext.onPaymentAuthorized(event, session, applepay);
-    };
+  // Create the session immediately on button click
+  const session = new window.ApplePaySession(4, paymentRequest);
+  const applepay = window[`paypal_${namespace}`].Applepay();
   
-    session.oncancel = () => {
-      clientContext.clearAddress();
-    };
-    
-    session.begin();
-  })
+  // Define session callbacks
+  session.onvalidatemerchant = (event) => {
+    applepay.validateMerchant({
+      validationUrl: event.validationURL,
+    }).then((payload) => {
+      session.completeMerchantValidation(payload.merchantSession);
+    }).catch((err) => {
+      console.error(err);
+      clientContext.onClose();
+      session.abort();
+    });
+  };
+  
+  session.onshippingcontactselected = (event) => {
+    clientContext.onShippingContactSelect(event, session);
+  };
+  
+  session.onshippingmethodselected = (event) => {
+    clientContext.onShippingMethodSelect(event, session);
+  };
+  
+  session.onpaymentauthorized = async (event) => {
+    clientContext.onPaymentAuthorized(event, session, applepay);
+  };
+  
+  session.oncancel = () => {
+    clientContext.onClose();
+  };
+  
+  // Perform async validation but do not delay session creation
+  clientContext.onValidate().then((isValid) => {
+    if (isValid) {
+      session.begin();
+    } else {
+      session.abort();
+    }
+  }).catch((err) => {
+    console.error('Validation error:', err);
+    session.abort();
+  });
 }
 
 /**
@@ -61,10 +66,8 @@ function start() {
 function createButton() {
   return new Promise((resolve) => {
     const applePayButton = document.createElement('apple-pay-button');
-    applePayButton.onclick = () => {
-      start();
-    };
-
+    applePayButton.onclick = start; // Call start directly
+    
     const container = document.getElementById(buttonElement);
     container.appendChild(applePayButton);
     resolve();
@@ -109,7 +112,7 @@ function showApplePay() {
       .catch((err) => {
         console.error('Error while fetching Apple Pay configuration:', err);
         reject(new Error('Error fetching Apple Pay configuration.'));
-        clientContext.clearAddress();
+        clientContext.onClose();
       });
   });
 }

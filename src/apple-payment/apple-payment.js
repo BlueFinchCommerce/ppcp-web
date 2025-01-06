@@ -28,6 +28,7 @@ function start() {
         session.completeMerchantValidation(payload.merchantSession);
       }).catch((err) => {
         console.error(err);
+        clientContext.clearAddress();
         session.abort();
       });
     };
@@ -42,6 +43,10 @@ function start() {
     
     session.onpaymentauthorized = async (event) => {
       clientContext.onPaymentAuthorized(event, session, applepay);
+    };
+  
+    session.oncancel = () => {
+      clientContext.clearAddress();
     };
     
     session.begin();
@@ -104,6 +109,7 @@ function showApplePay() {
       .catch((err) => {
         console.error('Error while fetching Apple Pay configuration:', err);
         reject(new Error('Error fetching Apple Pay configuration.'));
+        clientContext.clearAddress();
       });
   });
 }

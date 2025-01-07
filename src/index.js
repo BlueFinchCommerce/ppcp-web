@@ -1,3 +1,4 @@
+const apmPayments = require('./apm-payments');
 const applePayment = require('./apple-payment');
 const cardPayment = require('./card-payment/card-payment');
 const googlePayment = require('./google-payment');
@@ -6,6 +7,9 @@ const paypalMessages = require('./paypal-payment/paypal-messages');
 const venmoPayment = require('./venmo-payment');
 
 module.exports = {
+
+  /** @type {module:ppcp-web/apm-payments} */
+  apmPayments,
 
   /** @type {module:ppcp-web/apple-payment} */
   applePayment,

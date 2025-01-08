@@ -9,6 +9,26 @@
 define(() => { return /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./src/apm-payments/apm-payments.js":
+/*!******************************************!*\
+  !*** ./src/apm-payments/apm-payments.js ***!
+  \******************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+eval("const createAssets = __webpack_require__(/*! ../lib/create-assets */ \"./src/lib/create-assets.js\");\n\n// Global Variables\nconst namespace = 'ppcp_apm_payments';\nlet clientContext;\nlet mark;\nlet paymentFields;\nlet button;\nlet addingScripts = false;\n\n// Renders the PayPal Mark component if eligible and not already rendered\nfunction renderMark(element) {\n  const markSelector = document.getElementById(`paypal_${element}_mark`);\n  const markIsEmpty = markSelector.childNodes.length === 0;\n  if (mark.isEligible() && markSelector && markIsEmpty) {\n    mark.render(markSelector);\n  }\n}\n\n// Renders the PayPal Payment Fields component if eligible and not already rendered\nfunction renderFields(element) {\n  const fieldSelector = document.getElementById(`paypal_${element}_fields`);\n  const fieldIsEmpty = fieldSelector.childNodes.length === 0;\n  if (paymentFields.isEligible() && fieldSelector && fieldIsEmpty) {\n    paymentFields.render(fieldSelector);\n  }\n}\n\n// Renders the PayPal Button component if eligible and not already rendered\nfunction renderButton(element) {\n  const buttonSelector = document.getElementById(`paypal_${element}_button`);\n  const buttonIsEmpty = buttonSelector.childNodes.length === 0;\n  if (button.isEligible() && buttonSelector && buttonIsEmpty) {\n    button.render(buttonSelector);\n  }\n}\n\n// Initializes the PayPal components (mark, fields, button) for a specific funding source\nfunction initialiseMethod(element) {\n  const funding = window[`paypal_${namespace}`].FUNDING[element.toUpperCase()];\n  mark = window[`paypal_${namespace}`].Marks({\n    fundingSource: funding\n  });\n  paymentFields = window[`paypal_${namespace}`].PaymentFields({\n    fundingSource: funding\n  });\n  button = window[`paypal_${namespace}`].Buttons({\n    fundingSource: funding,\n    createOrder: clientContext.createOrder,\n    onApprove: clientContext.onApprove,\n    onClick: clientContext.onClick,\n    onError: clientContext.onError,\n    onCancel: clientContext.onCancel\n  });\n  renderMark(element);\n  renderFields(element);\n  renderButton(element);\n}\n\n// Main entry point for initializing the APM payments integration\nfunction ApmPayments(context, element) {\n  if (!context || !element) {\n    throw new Error('APM payments requires both context and element.');\n  }\n  clientContext = context;\n  const params = {\n    'client-id': clientContext.productionClientId,\n    intent: 'capture',\n    components: 'buttons,marks,funding-eligibility,payment-fields',\n    currency: clientContext.currency\n  };\n  if (clientContext.environment === 'sandbox') {\n    params['client-id'] = clientContext.sandboxClientId;\n    params['buyer-country'] = clientContext.buyerCountry;\n  }\n  if (!addingScripts) {\n    createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType).catch(error => {\n      console.error('Error initializing APM Payments:', error);\n    });\n  }\n  document.addEventListener('ppcpScriptLoaded', event => {\n    if (event.detail === namespace) {\n      initialiseMethod(element);\n    }\n  });\n  addingScripts = true;\n}\nmodule.exports = ApmPayments;\n\n//# sourceURL=webpack://ppcp-web/./src/apm-payments/apm-payments.js?");
+
+/***/ }),
+
+/***/ "./src/apm-payments/index.js":
+/*!***********************************!*\
+  !*** ./src/apm-payments/index.js ***!
+  \***********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+eval("const AmpPayments = __webpack_require__(/*! ./apm-payments */ \"./src/apm-payments/apm-payments.js\");\nfunction create(options, element) {\n  return new AmpPayments(options, element);\n}\nmodule.exports = create;\n\n//# sourceURL=webpack://ppcp-web/./src/apm-payments/index.js?");
+
+/***/ }),
+
 /***/ "./src/apple-payment/apple-payment.js":
 /*!********************************************!*\
   !*** ./src/apple-payment/apple-payment.js ***!
@@ -65,7 +85,7 @@ eval("const GooglePayment = __webpack_require__(/*! ./google-payment */ \"./src/
   \**********************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("const applePayment = __webpack_require__(/*! ./apple-payment */ \"./src/apple-payment/index.js\");\nconst cardPayment = __webpack_require__(/*! ./card-payment/card-payment */ \"./src/card-payment/card-payment.js\");\nconst googlePayment = __webpack_require__(/*! ./google-payment */ \"./src/google-payment/index.js\");\nconst paypalButtons = __webpack_require__(/*! ./paypal-payment/paypal-buttons */ \"./src/paypal-payment/paypal-buttons/index.js\");\nconst paypalMessages = __webpack_require__(/*! ./paypal-payment/paypal-messages */ \"./src/paypal-payment/paypal-messages/index.js\");\nconst venmoPayment = __webpack_require__(/*! ./venmo-payment */ \"./src/venmo-payment/index.js\");\nmodule.exports = {\n  /** @type {module:ppcp-web/apple-payment} */\n  applePayment,\n  /** @type {module:ppcp-web/card-payment} */\n  cardPayment,\n  /** @type {module:ppcp-web/google-payment} */\n  googlePayment,\n  /** @type {module:ppcp-web/paypal-payment/paypal-buttons} */\n  paypalButtons,\n  /** @type {module:ppcp-web/paypal-payment/paypal-messages} */\n  paypalMessages,\n  /** @type {module:ppcp-web/venmo-payment} */\n  venmoPayment\n};\n\n//# sourceURL=webpack://ppcp-web/./src/index.js?");
+eval("const apmPayments = __webpack_require__(/*! ./apm-payments */ \"./src/apm-payments/index.js\");\nconst applePayment = __webpack_require__(/*! ./apple-payment */ \"./src/apple-payment/index.js\");\nconst cardPayment = __webpack_require__(/*! ./card-payment/card-payment */ \"./src/card-payment/card-payment.js\");\nconst googlePayment = __webpack_require__(/*! ./google-payment */ \"./src/google-payment/index.js\");\nconst paypalButtons = __webpack_require__(/*! ./paypal-payment/paypal-buttons */ \"./src/paypal-payment/paypal-buttons/index.js\");\nconst paypalMessages = __webpack_require__(/*! ./paypal-payment/paypal-messages */ \"./src/paypal-payment/paypal-messages/index.js\");\nconst venmoPayment = __webpack_require__(/*! ./venmo-payment */ \"./src/venmo-payment/index.js\");\nmodule.exports = {\n  /** @type {module:ppcp-web/apm-payments} */\n  apmPayments,\n  /** @type {module:ppcp-web/apple-payment} */\n  applePayment,\n  /** @type {module:ppcp-web/card-payment} */\n  cardPayment,\n  /** @type {module:ppcp-web/google-payment} */\n  googlePayment,\n  /** @type {module:ppcp-web/paypal-payment/paypal-buttons} */\n  paypalButtons,\n  /** @type {module:ppcp-web/paypal-payment/paypal-messages} */\n  paypalMessages,\n  /** @type {module:ppcp-web/venmo-payment} */\n  venmoPayment\n};\n\n//# sourceURL=webpack://ppcp-web/./src/index.js?");
 
 /***/ }),
 

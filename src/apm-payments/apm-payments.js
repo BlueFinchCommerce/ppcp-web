@@ -86,7 +86,7 @@ function ApmPayments(context, element) {
   if (!addingScripts) {
     createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType)
       .catch((error) => {
-        console.error('Error initializing Venmo Button:', error);
+        console.error('Error initializing APM Payments:', error);
       });
   }
 

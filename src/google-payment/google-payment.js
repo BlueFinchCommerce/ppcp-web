@@ -1,5 +1,6 @@
 const createAssets = require('../lib/create-assets');
 
+let namespace = 'ppcp_googlepay';
 let clientContext;
 let googlePayClient;
 let googlepay;
@@ -96,11 +97,11 @@ function onClick(googlepayConfig) {
     const paymentDataRequest = { ...googlepayConfig };
     const callbackIntents = ['PAYMENT_AUTHORIZATION'];
     const requiresShipping = clientContext.onPaymentDataChanged;
-    
+
     if (requiresShipping) {
       callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
     }
-    
+
     paymentDataRequest.allowedPaymentMethods = googlepayConfig.allowedPaymentMethods;
     paymentDataRequest.transactionInfo = {
       countryCode: googlepayConfig.countryCode,
@@ -118,7 +119,7 @@ function onClick(googlepayConfig) {
     paymentDataRequest.callbackIntents = callbackIntents;
     delete paymentDataRequest.countryCode;
     delete paymentDataRequest.isEligible;
-    
+
     googlePayClient
       .loadPaymentData(paymentDataRequest)
       .catch((error) => {
@@ -185,7 +186,7 @@ function GooglePayment(context, element) {
   }
 
   // Create Assets
-  createAssets.create('https://www.paypal.com/sdk/js', params, 'ppcp_googlepay', clientContext.pageType)
+  createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType)
     .then(() => deviceSupported())
     .then((googlepayConfig) => createGooglePayClient(googlepayConfig))
     .then((googlepayConfig) => createGooglePayButton(googlepayConfig))

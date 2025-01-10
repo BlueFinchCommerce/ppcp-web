@@ -12,8 +12,17 @@ const createAssets = (url, params, namespace, pageType, userIdToken) => {
 
   const key = generateKey(finalUrl, namespace, userIdToken);
 
+  // Dispatch the event even if the script is already cached.
+  const dispatchEvent = () => {
+    const event = new CustomEvent('ppcpScriptLoaded', {
+      detail: namespace,
+    });
+    document.dispatchEvent(event);
+  };
+
   // If the key has already been used return the existing promise that will already be resolved.
   if (cache[key]) {
+    dispatchEvent();
     return cache[key];
   }
 
@@ -31,10 +40,7 @@ const createAssets = (url, params, namespace, pageType, userIdToken) => {
 
     // On load resolve but also emit a global event.
     script.onload = () => {
-      const event = new CustomEvent('ppcpScriptLoaded', {
-        detail: namespace,
-      });
-      document.dispatchEvent(event);
+      dispatchEvent();
       resolve();
     };
 

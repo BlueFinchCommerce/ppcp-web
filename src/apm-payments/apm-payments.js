@@ -6,7 +6,6 @@ let clientContext;
 let mark;
 let paymentFields;
 let button;
-let addingScripts = false;
 
 // Renders the PayPal Mark component if eligible and not already rendered
 function renderMark(element) {
@@ -35,11 +34,16 @@ function renderButton(element) {
 
   if (button.isEligible() && buttonSelector && buttonIsEmpty) {
     button.render(buttonSelector);
+    clientContext.isPaymentMethodAvailable(
+      button.isEligible(),
+      element,
+    );
   }
 }
 
 // Initializes the PayPal components (mark, fields, button) for a specific funding source
 function initialiseMethod(element) {
+  if (!window[`paypal_${namespace}`]) return;
   const funding = window[`paypal_${namespace}`].FUNDING[element.toUpperCase()];
   mark = window[`paypal_${namespace}`].Marks({
     fundingSource: funding,
@@ -51,11 +55,11 @@ function initialiseMethod(element) {
 
   button = window[`paypal_${namespace}`].Buttons({
     fundingSource: funding,
-    createOrder: clientContext.createOrder,
-    onApprove: clientContext.onApprove,
+    createOrder: () => clientContext.createOrder(element),
+    onApprove: () => clientContext.onApprove(element),
     onClick: clientContext.onClick,
     onError: clientContext.onError,
-    onCancel: clientContext.onCancel,
+    onCancel: () => clientContext.onCancel(element),
   });
 
   renderMark(element);
@@ -83,20 +87,16 @@ function ApmPayments(context, element) {
     params['buyer-country'] = clientContext.buyerCountry;
   }
 
-  if (!addingScripts) {
-    createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType)
-      .catch((error) => {
-        console.error('Error initializing APM Payments:', error);
-      });
-  }
+  createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType)
+    .catch((error) => {
+      console.error('Error initializing APM Payments:', error);
+    });
 
   document.addEventListener('ppcpScriptLoaded', (event) => {
     if (event.detail === namespace) {
       initialiseMethod(element);
     }
   });
-
-  addingScripts = true;
 }
 
 module.exports = ApmPayments;

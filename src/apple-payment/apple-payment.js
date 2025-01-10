@@ -1,7 +1,7 @@
 const createAssets = require('../lib/create-assets');
 
 // Global Variables
-const namespace = 'ppcp_applepay_new';
+const namespace = 'ppcp_applepay';
 let clientContext;
 let buttonElement;
 let paymentRequest;
@@ -15,7 +15,7 @@ function start() {
   // Create the session immediately on button click
   const session = new window.ApplePaySession(4, paymentRequest);
   const applepay = window[`paypal_${namespace}`].Applepay();
-  
+
   // Define session callbacks
   session.onvalidatemerchant = (event) => {
     applepay.validateMerchant({
@@ -28,23 +28,23 @@ function start() {
       session.abort();
     });
   };
-  
+
   session.onshippingcontactselected = (event) => {
     clientContext.onShippingContactSelect(event, session);
   };
-  
+
   session.onshippingmethodselected = (event) => {
     clientContext.onShippingMethodSelect(event, session);
   };
-  
+
   session.onpaymentauthorized = async (event) => {
     clientContext.onPaymentAuthorized(event, session, applepay);
   };
-  
+
   session.oncancel = () => {
     clientContext.onClose();
   };
-  
+
   // Perform async validation but do not delay session creation
   clientContext.onValidate().then((isValid) => {
     if (isValid) {
@@ -67,7 +67,7 @@ function createButton() {
   return new Promise((resolve) => {
     const applePayButton = document.createElement('apple-pay-button');
     applePayButton.onclick = start; // Call start directly
-    
+
     const container = document.getElementById(buttonElement);
     container.appendChild(applePayButton);
     resolve();
@@ -102,7 +102,7 @@ function showApplePay() {
           reject(new Error('Apple Pay is not eligible.'));
           return;
         }
-        
+
         return clientContext.getPaymentRequest(applepayConfig);
       })
       .then((paymentRequestData) => {

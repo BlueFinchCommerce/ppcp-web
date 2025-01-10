@@ -1,6 +1,6 @@
 const createAssets = require('../lib/create-assets');
 
-const namespace = 'ppcp_card_new';
+const namespace = 'ppcp_card';
 let clientContext;
 let buttonElement;
 

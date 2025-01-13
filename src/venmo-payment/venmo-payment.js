@@ -81,6 +81,9 @@ function VenmoPayment(context, element) {
       if (button.isEligible() && buttonSelector && elementIsEmpty) {
         button.render(buttonSelector);
       }
+      clientContext.isPaymentMethodEligible(
+        button.isEligible(),
+      );
     })
     .catch((error) => {
       console.error('Error initializing Venmo Button:', error);

@@ -160,6 +160,11 @@ function PaypalButtons(context, element) {
         if (buttons[funding].isEligible() && buttonSelector && elementIsEmpty) {
           buttons[funding].render(buttonSelector);
         }
+
+        clientContext.isPaymentMethodEligible(
+          buttons[funding].isEligible(),
+          funding,
+        );
       });
     })
     .catch((error) => {

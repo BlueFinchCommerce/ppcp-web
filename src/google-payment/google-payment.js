@@ -1,6 +1,6 @@
 const createAssets = require('../lib/create-assets');
 
-let namespace = 'ppcp_googlepay';
+const namespace = 'ppcp_googlepay';
 let clientContext;
 let googlePayClient;
 let googlepay;

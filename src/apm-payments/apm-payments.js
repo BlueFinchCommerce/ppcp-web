@@ -10,6 +10,7 @@ let button;
 // Renders the PayPal Mark component if eligible and not already rendered
 function renderMark(element) {
   const markSelector = document.getElementById(`paypal_${element}_mark`);
+  if (!markSelector) return;
   const markIsEmpty = markSelector.childNodes.length === 0;
 
   if (mark.isEligible() && markSelector && markIsEmpty) {
@@ -20,6 +21,7 @@ function renderMark(element) {
 // Renders the PayPal Payment Fields component if eligible and not already rendered
 function renderFields(element) {
   const fieldSelector = document.getElementById(`paypal_${element}_fields`);
+  if (!fieldSelector) return;
   const fieldIsEmpty = fieldSelector.childNodes.length === 0;
 
   if (paymentFields.isEligible() && fieldSelector && fieldIsEmpty) {
@@ -30,6 +32,7 @@ function renderFields(element) {
 // Renders the PayPal Button component if eligible and not already rendered
 function renderButton(element) {
   const buttonSelector = document.getElementById(`paypal_${element}_button`);
+  if (!buttonSelector) return;
   const buttonIsEmpty = buttonSelector.childNodes.length === 0;
 
   if (button.isEligible() && buttonSelector && buttonIsEmpty) {

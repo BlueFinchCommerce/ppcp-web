@@ -21,6 +21,7 @@ function renderFields(cardFields) {
       placeholder: clientNumberField.placeholder,
       inputEvents: {
         onBlur: (data) => clientNumberField.inputEvents.blur(data, cardContainer),
+        onChange: () => clientNumberField.inputEvents.change(),
         onFocus: () => {},
       },
     });
@@ -28,6 +29,7 @@ function renderFields(cardFields) {
       placeholder: clientCvvField.placeholder,
       inputEvents: {
         onBlur: (data) => clientCvvField.inputEvents.blur(data, cvvContainer),
+        onChange: () => clientCvvField.inputEvents.change(),
         onFocus: () => {},
       },
     });
@@ -35,6 +37,7 @@ function renderFields(cardFields) {
       placeholder: clientExpiryField.placeholder,
       inputEvents: {
         onBlur: (data) => clientExpiryField.inputEvents.blur(data, cardExpiryContainer),
+        onChange: () => clientExpiryField.inputEvents.change(),
         onFocus: () => {},
       },
     });

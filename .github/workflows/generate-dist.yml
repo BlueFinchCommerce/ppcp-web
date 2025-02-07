@@ -6,7 +6,6 @@ on:
       - master
       - "develop*"
       - "hotfix/*"
-      - feature/code-refactoring
 
 jobs:
   generate-dist:

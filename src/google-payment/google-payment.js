@@ -89,6 +89,7 @@ function createGooglePayClient(googlepayConfig) {
  * otherwise, initiates the payment request.
  */
 function onClick(googlepayConfig) {
+  /* eslint-disable consistent-return */
   clientContext.onValidate().then((isValid) => {
     if (!isValid) {
       return false; // Stop further processing

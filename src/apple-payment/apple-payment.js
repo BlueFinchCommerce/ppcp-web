@@ -103,6 +103,7 @@ function showApplePay() {
           return;
         }
 
+        /* eslint-disable consistent-return */
         return clientContext.getPaymentRequest(applepayConfig);
       })
       .then((paymentRequestData) => {

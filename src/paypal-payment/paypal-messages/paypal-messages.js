@@ -14,6 +14,7 @@ const params = {
  * @returns {Promise<void>}
  */
 function attachPayLaterMessageSubscription() {
+  /* eslint-disable no-use-before-define */
   return createAssets.create('https://www.paypal.com/sdk/js', params, namespace, clientContext.pageType)
     .then(() => renderMessage());
 }

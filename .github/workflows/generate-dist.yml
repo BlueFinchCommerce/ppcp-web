@@ -32,7 +32,7 @@ jobs:
           git config --global pull.rebase false
           git fetch --unshallow || true
 
-          npm i 
+          npm ci 
           npm run prod
           git add -f ./dist
 

@@ -1,5 +1,5 @@
 {
-  "name": "ppcp-web",
+  "name": "blufinch-ppcp-web",
   "version": "1.0.0",
   "description": "PPCP Web",
   "main": "src/index.js",

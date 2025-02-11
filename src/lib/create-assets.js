@@ -32,7 +32,7 @@ const createAssets = (url, params, namespace, pageType, userIdToken) => {
 
     script.src = finalUrl;
     script.dataset.namespace = `paypal_${namespace}`;
-    script.dataset.partnerAttributionId = 'GENE_PPCP';
+    script.dataset.partnerAttributionId = 'BLUEFINCH_PPCP';
     script.dataset.pageType = pageType || 'checkout';
     if (userIdToken) {
       script.dataset.userIdToken = userIdToken;

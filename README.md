@@ -4,7 +4,7 @@
 
 # BlueFinch PPCP Web
 
-blufinch-ppcp-web is a supporting package for integrating PayPal PPCP functionality into BlueFinch Checkout for Magento 2. 
+bluefinch-ppcp-web is a supporting package for integrating PayPal PPCP functionality into BlueFinch Checkout for Magento 2. 
 This package provides essential utilities for seamless interaction between your checkout module and PayPal PPCP.
 
 ## Requirements
@@ -17,7 +17,7 @@ This package provides essential utilities for seamless interaction between your 
 Ensure you have both BlueFinch Checkout and BlueFinch Checkout PPCP installed. 
 Then, inside the module-checkout-ppcp/view/frontend/web/js/checkout directory, run:
 
-npm install blufinch-ppcp-web
+npm install bluefinch-ppcp-web
 
 This will install the necessary dependencies for integrating PayPal PPCP into your checkout module.
 

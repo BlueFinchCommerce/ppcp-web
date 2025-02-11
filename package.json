@@ -1,5 +1,5 @@
 {
-  "name": "blufinch-ppcp-web",
+  "name": "bluefinch-ppcp-web",
   "version": "1.0.0",
   "description": "PPCP Web",
   "main": "src/index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blufinchcommerce/ppcp-web.git"
+    "url": "git+https://github.com/bluefinchcommerce/ppcp-web.git"
   },
   "dependencies": {
     "@braintree/asset-loader": "2.0.1",
@@ -34,9 +34,9 @@
   "author": "Chloe Langford",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/blufinchcommerce/ppcp-web/issues"
+    "url": "https://github.com/bluefinchcommerce/ppcp-web/issues"
   },
-  "homepage": "https://github.com/blufinchcommerce/ppcp-web#readme",
+  "homepage": "https://github.com/bluefinchcommerce/ppcp-web#readme",
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "babel-loader": "^9.2.1",

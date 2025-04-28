@@ -4,11 +4,6 @@ const namespace = 'ppcp_fastlane';
 let ctx;
 let paymentComponent;
 
-/**
- * Attach click/keyboard handler to the merchant’s “Pay” button.
- * (We don’t rely on the built-in Fastlane button because you already
- * render your own Vue <MyButton>.)
- */
 function bindSubmitButton() {
   const btn = document.querySelector(ctx.buttonElement);
   
@@ -35,9 +30,6 @@ function bindSubmitButton() {
   btn.addEventListener('keydown', handler);
 }
 
-/**
- * Render the FastlanePaymentComponent once the SDK is ready.
- */
 async function hydrateFastlane() {
   const paypalNs = window[`paypal_${namespace}`];
   if (!paypalNs?.Connect) {
@@ -78,17 +70,13 @@ async function hydrateFastlane() {
     
     await paymentComponent.render(ctx.containerSelector);
     bindSubmitButton();
-    ctx.onReady?.({ paymentComponent, fastlaneInstance });
+    ctx.onReady?.({paymentComponent, fastlaneInstance});
   } catch (err) {
     console.error('Fastlane render failed:', err);
     ctx.handleErrors?.(err.message || err);
   }
 }
 
-/**
- * Load PayPal SDK (& Fastlane component)
- * Required context keys are documented in the JSDoc below.
- */
 function fastlanePayment(userContext) {
   ctx = userContext;
   if (!ctx || !ctx.containerSelector || !ctx.buttonElement) {
@@ -111,9 +99,7 @@ function fastlanePayment(userContext) {
     .then(hydrateFastlane);
 }
 
-/**
- * Optional teardown helper so Vue can destroy the iframe cleanly.
- */
+
 fastlanePayment.teardown = async () => {
   try {
     await paymentComponent?.teardown?.();

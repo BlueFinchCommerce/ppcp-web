@@ -38,6 +38,10 @@ const createAssets = (url, params, namespace, pageType, userIdToken) => {
       script.dataset.userIdToken = userIdToken;
     }
 
+    if (window?.cspNonce) {
+      script.dataset.cspNonce = window.cspNonce;
+    }
+
     // On load resolve but also emit a global event.
     script.onload = () => {
       dispatchEvent();
